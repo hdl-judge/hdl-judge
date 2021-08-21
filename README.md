@@ -14,9 +14,9 @@ An online environment for learning digital systems with Hardware Description Lan
 │   ├── tests/           tests
 │   └── worker/          code specific to celery
 └── frontend/
-    ├── app/
+    ├── src/
     │   ├── components/  components meant to be reused
-    │   └── views/       the main pages of the web app
+    │   └── routes/      the main pages of the web app
     ├── public/          global html, css and images
     └── tests/           tests
 ```
