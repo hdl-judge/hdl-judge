@@ -1,9 +1,24 @@
 <script lang="ts">
-	import { AceEditor } from "svelte-ace";
-	import "brace/mode/vhdl";
-	import "brace/theme/monokai";
+	import { onMount, onDestroy } from "svelte";
+	import CodeMirror from "codemirror";
 
-	let text = `entity adder is
+	import "codemirror/lib/codemirror.css";
+	import "codemirror/theme/lesser-dark.css";
+	import "codemirror/mode/vhdl/vhdl";
+
+	let textarea;
+	let editor;
+
+	const config = {
+		lineNumbers: true,
+		lineWrapping: true,
+		theme: "lesser-dark",
+		mode: "vhdl",
+		indentWithTabs: true,
+		smartIndent: false,
+	};
+
+	let initialValue = `entity adder is
 	port(
 		i0, i1 : in bit;
 		ci : in bit;
@@ -11,22 +26,25 @@
 		co : out bit
 	);
 end adder;`;
+
+	onMount(() => {
+		editor = CodeMirror.fromTextArea(textarea, config);
+		editor.setSize("100%", "100%");
+		editor.setValue(initialValue);
+	});
+
+	onDestroy(() => {
+		editor.toTextArea();
+	});
 </script>
 
 <main>
 	<h1>HDL Judge</h1>
 	<p>Implement an adder with the following interface</p>
-	<div id="editor">
-		<AceEditor
-			width="100%"
-			height="300px"
-			lang="vhdl"
-			theme="monokai"
-			bind:value={text}
-		/>
-	</div>
 	<form action="http://127.0.0.1:8000/test/execute" method="post">
-		<input name="code" type="text" value={text} hidden>
+		<div id="editor">
+			<textarea name="code" bind:this={textarea} />
+		</div>
 		<button>Submit</button>
 	</form>
 </main>
@@ -54,8 +72,13 @@ end adder;`;
 	}
 
 	#editor {
+		text-align: left;
 		width: 500px;
+		height: 300px;
 		margin: auto;
-		margin-bottom: 10px;
+	}
+
+	button {
+		margin-top: 15px;
 	}
 </style>
