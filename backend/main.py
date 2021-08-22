@@ -1,6 +1,6 @@
 import subprocess
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -25,11 +25,9 @@ async def root():
 
 
 @app.post("/test/execute")
-async def execute_test(file: UploadFile = File(...)):
-    content = await file.read()
-
-    with open("adder.vhdl", "wb") as f:
-        f.write(content)
+async def execute_test(code: str = Form(...)):
+    with open("adder.vhdl", "w") as f:
+        f.write(code)
 
     subprocess.run(["ghdl", "-a", "adder.vhdl", "adder_tb.vhdl"])
     subprocess.run(["ghdl", "-e", "adder_tb"])
