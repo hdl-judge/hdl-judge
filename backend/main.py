@@ -35,4 +35,4 @@ async def execute_test(file: UploadFile = File(...)):
     subprocess.run(["ghdl", "-e", "adder_tb"])
     subprocess.run(["ghdl", "-r", "adder_tb", "--vcd=adder.vcd"])
 
-    return FileResponse("adder.vcd")
+    return FileResponse("adder.vcd", filename="adder.vcd")

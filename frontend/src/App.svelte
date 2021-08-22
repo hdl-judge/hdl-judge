@@ -1,23 +1,18 @@
 <script lang="ts">
-    import { executeTest } from './api'
-    
 	let files: FileList;
-
-	async function upload() {
-		let result = await executeTest(files[0]);
-        console.log(result);
-	}
 </script>
 
 <main>
 	<h1>HDL Judge</h1>
 	<p>Choose a .vhd file to be tested</p>
-	<input id="fileUpload" type="file" bind:files>
-	{#if files}
-		<button on:click={upload}>Submit</button>
-	{:else}
-		<button disabled>Submit</button>
-	{/if}
+	<form action="http://127.0.0.1:8000/test/execute" enctype="multipart/form-data" method="post">
+		<input name="file" type="file" bind:files>
+		{#if files}
+			<button>Submit</button>
+		{:else}
+			<button disabled>Submit</button>
+		{/if}
+	</form>
 </main>
 
 <style>
