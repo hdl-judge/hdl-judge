@@ -1,9 +1,9 @@
 from logging import Logger
 from typing import Optional, List, Any, Dict, Text
 
-from src3.backend.controllers import BaseController
+from src.backend.controllers import BaseController
 
-from src3.backend.adapters.secondary.http import HTTPClient
+from src.backend.adapters.secondary.http import HTTPClient
 
 
 class ReadController(BaseController):

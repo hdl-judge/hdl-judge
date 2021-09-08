@@ -2,8 +2,10 @@ import requests
 
 from typing import Text
 
+from src.backend.adapters.secondary.http import HTTPClient
 
-class HTTPRequests:
+
+class HTTPRequests(HTTPClient):
     def __init__(self):
         self._requests = requests
 

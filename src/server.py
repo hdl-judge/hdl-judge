@@ -4,11 +4,11 @@ from logging import Logger
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from src3.backend.controllers.read_controller import ReadController
-from src3.backend.adapters.secondary.http import HTTPClient
+from src.backend.controllers.read_controller import ReadController
+from src.backend.adapters.secondary.http import HTTPClient
 
 from fastapi import Depends
-from src3.backend.dependencies import Container
+from src.backend.dependencies import Container
 from dependency_injector.wiring import inject, Provide
 
 class Gif(BaseModel):

@@ -2,8 +2,8 @@
 
 from fastapi import FastAPI
 
-from src3.backend.dependencies import Container
-from src3 import server
+from src.backend.dependencies import Container
+from src import server
 
 
 def create_app() -> FastAPI:
