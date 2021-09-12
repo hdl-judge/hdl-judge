@@ -20,6 +20,8 @@ class ReadController(BaseController):
         self.http_adapter = http_adapter
 
     def get_data(self) -> Dict[Text, Any]:
-
         result = self.http_adapter.get(self.POSTS_ENDPOINT)
         return result
+
+    def get_config(self) -> Any:
+        return True

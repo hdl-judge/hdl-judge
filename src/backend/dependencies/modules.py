@@ -1,19 +1,25 @@
 from dependency_injector import containers, providers
 
-from . import giphy, services
+from src.backend.adapters.secondary.http.http_request import HTTPRequests
 
 
-class Container(containers.DeclarativeContainer):
-
+class BaseContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
 
-    giphy_client = providers.Factory(
-        giphy.GiphyClient,
-        api_key=config.giphy.api_key,
-        timeout=config.giphy.request_timeout,
+
+class ProductionContainer(BaseContainer):
+    http_client = providers.Factory(
+        HTTPRequests
     )
 
-    search_service = providers.Factory(
-        services.SearchService,
-        giphy_client=giphy_client
+
+class TestContainer(BaseContainer):
+    http_client = providers.Factory(
+        HTTPRequests
+    )
+
+
+class DevelopmentContainer(BaseContainer):
+    http_client = providers.Factory(
+        HTTPRequests
     )
