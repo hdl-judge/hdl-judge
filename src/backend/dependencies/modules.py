@@ -3,6 +3,7 @@ from dependency_injector import containers, providers
 from src.backend.adapters.secondary.http.http_request import HTTPRequests
 from src.backend.adapters.secondary.database.SQLAlchemy_client import SQLAlchemyClient
 from src.backend.adapters.secondary.plagiarism_detector.moss_detector import MossClient
+from src.backend.adapters.secondary.hdl_motor.ghdl_motor import GHDLMotor
 
 
 class BaseContainer(containers.DeclarativeContainer):
@@ -47,3 +48,7 @@ class DevelopmentContainer(BaseContainer):
         MossClient,
         BaseContainer.config.BaseConfig.idMoss
     )
+    hdl_motor = providers.Factory(
+      GHDLMotor
+    )
+

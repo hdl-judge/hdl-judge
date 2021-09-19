@@ -1,15 +1,17 @@
-from typing import Optional, List, Any
+from typing import Any
 from logging import Logger
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from src.backend.controllers.read_controller import ReadController
 from src.backend.adapters.secondary.http import HTTPClient
 from src.backend.adapters.secondary.database import SQLClient
 from src.backend.adapters.secondary.plagiarism_detector import PlagiarismDetectorClient
+from src.backend.adapters.secondary.hdl_motor import HDLMotor
+from src.backend.adapters.primary.api.schemas.submission import Submission
 
-from fastapi import Depends
+
 from src.backend.dependencies import get_container
 from dependency_injector.wiring import inject, Provide
 
@@ -49,10 +51,19 @@ async def index(
     response = controller.submit_codes_to_plagiarism()
     return response
 
-
+  
 @router.get('/config')
 @inject
 async def index(
     config: str = Depends(Provide[Container.config])
 ):
     return config
+
+
+@router.post('/submit')
+@inject
+async def submit(
+    submission: Submission,
+    hdl_motor: HDLMotor = Depends(Provide[Container.hdl_motor])
+):
+    return hdl_motor.get_waveform(submission.toplevel_entity, submission.files)
