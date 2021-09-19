@@ -1,14 +1,15 @@
-from typing import Any, Dict
+from typing import Any
 from logging import Logger
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from src.backend.controllers.read_controller import ReadController
 from src.backend.adapters.secondary.http import HTTPClient
 from src.backend.adapters.secondary.hdl_motor import HDLMotor
 
-from fastapi import Depends
+from src.backend.adapters.primary.api.schemas.submission import Submission
+
 from src.backend.dependencies import get_container
 from dependency_injector.wiring import inject, Provide
 
@@ -17,11 +18,6 @@ class Response(BaseModel):
     query: str
     limit: int
     gifs: Any
-
-
-class Submission(BaseModel):
-    toplevel_entity: str
-    files: Dict[str, str]
 
 
 router = APIRouter()

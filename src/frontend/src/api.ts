@@ -1,16 +1,26 @@
 import config from "./config"
 
+class File {
+	filename: string;
+	content: string;
+}
+
 class Submission {
-	toplevelEntity: string;
+	toplevel_entity: string;
 	files: object;
 }
 
 export async function submitTest(userCode: string): Promise<string> {
 	let submission = new Submission();
-	submission.toplevelEntity = "adder_tb";
-	submission.files = {
-		"adder.vhdl": userCode,
-		"adder_tb.vhdl": `--  A testbench has no ports.
+	submission.toplevel_entity = "adder_tb";
+
+    let adder = new File();
+    adder.filename = "adder.vhdl";
+    adder.content = userCode;
+
+    let adder_tb = new File();
+    adder_tb.filename = "adder_tb.vhdl";
+    adder_tb.content = `--  A testbench has no ports.
 entity adder_tb is
 end adder_tb;
 
@@ -66,12 +76,17 @@ begin
     wait;
   end process;
 
-end behav;`
-	};
+end behav;`;
+
+    submission.files = [adder, adder_tb];
+
     console.log(JSON.stringify(submission))
 
 	let response = await fetch(`${config.API_URL}/submit`, {
 		method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
 		body: JSON.stringify(submission)
 	});
 
