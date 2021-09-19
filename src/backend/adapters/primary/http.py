@@ -10,6 +10,7 @@ from src.backend.adapters.secondary.database import SQLClient
 from src.backend.adapters.secondary.plagiarism_detector import PlagiarismDetectorClient
 from src.backend.adapters.secondary.hdl_motor import HDLMotor
 from src.backend.adapters.primary.api.schemas.submission import Submission
+from src.backend.adapters.primary.api.schemas.submission_return import SubmissionReturn
 
 
 from src.backend.dependencies import get_container
@@ -60,10 +61,13 @@ async def index(
     return config
 
 
-@router.post('/submit')
+@router.post(
+    "/submit",
+    response_model=SubmissionReturn)
 @inject
 async def submit(
     submission: Submission,
     hdl_motor: HDLMotor = Depends(Provide[Container.hdl_motor])
 ):
-    return hdl_motor.get_waveform(submission.toplevel_entity, submission.files)
+    response = hdl_motor.get_waveform(submission.toplevel_entity, submission.files)
+    return response
