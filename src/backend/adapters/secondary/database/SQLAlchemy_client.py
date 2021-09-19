@@ -52,18 +52,41 @@ class SQLAlchemyClient(SQLClient):
             for values in table_values
         ]
 
+    def query(self, query_text: Text) -> List[Dict[Any, Any]]:
+        from sqlalchemy.sql import text
+        values = self._engine.execute(text(query_text))
+        if values.returns_rows:
+            return [
+                {k: v for k, v in zip(values.keys(), values)}
+                for values in values
+            ]
+        else:
+            return []
+
+
+
 
 if __name__ == "__main__":
     client = SQLAlchemyClient()
 
     id = 17
-
-    print(client.get_values("products", "product_id", id))
-    client.insert_values("products", {"product_id": id, "product_name": "Pudim2"})
-    print(client.get_values("products", "product_id", id))
-    client.update_values("products", {"product_name": "Pudim3"}, "product_id", id)
-    print(client.get_values("products", "product_id", id))
-    client.delete_values("products", "product_id", id)
-    print(client.get_values("products", "product_id", id))
+    try:
+        print((client.query("CREATE TABLE IF NOT EXISTS products ([product_id] INTEGER PRIMARY KEY, [product_name] TEXT)")))
+        print(client.get_values("products", "product_id", id))
+        client.insert_values("products", {"product_id": id, "product_name": "Pudim2"})
+        print(client.get_values("products", "product_id", id))
+        client.update_values("products", {"product_name": "Pudim3"}, "product_id", id)
+        client.insert_values("products", {"product_id": id+1, "product_name": "Pudim2"})
+        print(client.get_values("products", "product_id", id))
+        print(client.query("SELECT * FROM products"))
+        print(client.query(""))
+        client.delete_values("products", "product_id", id)
+        client.delete_values("products", "product_id", id+1)
+        print(client.get_values("products", "product_id", id))
+        print((client.query("SELECT * FROM products")))
+    except Exception as ex:
+        client.delete_values("products", "product_id", id)
+        client.delete_values("products", "product_id", id + 1)
+        raise ex
 
 
