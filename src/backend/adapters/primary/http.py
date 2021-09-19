@@ -1,4 +1,4 @@
-from typing import Optional, List, Any
+from typing import Any, Dict
 from logging import Logger
 
 from fastapi import APIRouter
@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from src.backend.controllers.read_controller import ReadController
 from src.backend.adapters.secondary.http import HTTPClient
+from src.backend.adapters.secondary.hdl_motor import HDLMotor
 
 from fastapi import Depends
 from src.backend.dependencies import get_container
@@ -16,6 +17,11 @@ class Response(BaseModel):
     query: str
     limit: int
     gifs: Any
+
+
+class Submission(BaseModel):
+    toplevel_entity: str
+    files: Dict[str, str]
 
 
 router = APIRouter()
@@ -37,9 +43,19 @@ async def index(
         'gifs': request.text,
     }
 
+
 @router.get('/config')
 @inject
 async def index(
     config: str = Depends(Provide[Container.config])
 ):
     return config
+
+
+@router.post('/submit')
+@inject
+async def submit(
+    submission: Submission,
+    hdl_motor: HDLMotor = Depends(Provide[Container.hdl_motor])
+):
+    return hdl_motor.get_waveform(submission.toplevel_entity, submission.files)
