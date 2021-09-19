@@ -6,6 +6,8 @@ from pydantic import BaseModel
 
 from src.backend.controllers.read_controller import ReadController
 from src.backend.adapters.secondary.http import HTTPClient
+from src.backend.adapters.secondary.database import SQLClient
+from src.backend.adapters.secondary.plagiarism_detector import PlagiarismDetectorClient
 
 from fastapi import Depends
 from src.backend.dependencies import get_container
@@ -27,7 +29,7 @@ Container = get_container()
 async def index(
     http_adapter: HTTPClient = Depends(Provide[Container.http_client]),
 ):
-    controller = ReadController(Logger, http_adapter)
+    controller = ReadController(logger=Logger, http_adapter=http_adapter)
 
     request = controller.get_data()
 
@@ -36,6 +38,17 @@ async def index(
         'limit': 3,
         'gifs': request.text,
     }
+
+
+@router.get('/plagiarism')
+@inject
+async def index(
+    plagiarism_client: PlagiarismDetectorClient = Depends(Provide[Container.plagiarism_client]),
+):
+    controller = ReadController(logger=Logger, plagiarism_client=plagiarism_client)
+    response = controller.submit_codes_to_plagiarism()
+    return response
+
 
 @router.get('/config')
 @inject
