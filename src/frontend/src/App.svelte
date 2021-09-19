@@ -6,10 +6,13 @@
 	import "codemirror/theme/lesser-dark.css";
 	import "codemirror/mode/vhdl/vhdl";
 
-	let textarea;
-	let editor;
+	import { submitTest } from "./api";
+    import { createAndDownloadFile } from "./utils";
 
-	const config = {
+	let textarea: HTMLTextAreaElement;
+	let editor: CodeMirror.EditorFromTextArea;
+
+	const config: CodeMirror.EditorConfiguration = {
 		lineNumbers: true,
 		lineWrapping: true,
 		theme: "lesser-dark",
@@ -18,7 +21,7 @@
 		smartIndent: false,
 	};
 
-	let initialValue = `entity adder is
+	const initialValue: string = `entity adder is
 	port(
 		i0, i1 : in bit;
 		ci : in bit;
@@ -36,17 +39,21 @@ end adder;`;
 	onDestroy(() => {
 		editor.toTextArea();
 	});
+
+	async function onSubmit(): Promise<void> {
+        let userCode = editor.getValue();
+		let vcd: string = await submitTest(userCode);
+        createAndDownloadFile(vcd, "result", "vcd");
+	}
 </script>
 
 <main>
 	<h1>HDL Judge</h1>
 	<p>Implement an adder with the following interface</p>
-	<form action="http://127.0.0.1:8000/test/execute" method="post">
-		<div id="editor">
-			<textarea name="code" bind:this={textarea} />
-		</div>
-		<button>Submit</button>
-	</form>
+	<div id="editor">
+		<textarea name="code" bind:this={textarea}></textarea>
+	</div>
+	<button on:click={onSubmit}>Submit</button>
 </main>
 
 <style>

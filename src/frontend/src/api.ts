@@ -1,4 +1,16 @@
---  A testbench has no ports.
+import config from "./config"
+
+class Submission {
+	toplevelEntity: string;
+	files: object;
+}
+
+export async function submitTest(userCode: string): Promise<string> {
+	let submission = new Submission();
+	submission.toplevelEntity = "adder_tb";
+	submission.files = {
+		"adder.vhdl": userCode,
+		"adder_tb.vhdl": `--  A testbench has no ports.
 entity adder_tb is
 end adder_tb;
 
@@ -54,4 +66,14 @@ begin
     wait;
   end process;
 
-end behav;
+end behav;`
+	};
+    console.log(JSON.stringify(submission))
+
+	let response = await fetch(`${config.API_URL}/submit`, {
+		method: "POST",
+		body: JSON.stringify(submission)
+	});
+
+	return response.json()
+}
