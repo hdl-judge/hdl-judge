@@ -132,3 +132,6 @@ dmypy.json
 
 # Config and secrets
 config.yml
+
+static/*
+!static/.gitkeep

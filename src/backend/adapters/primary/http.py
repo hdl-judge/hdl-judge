@@ -27,20 +27,20 @@ router = APIRouter()
 Container = get_container()
 
 
-@router.get('/', response_model=Response)
-@inject
-async def index(
-    http_adapter: HTTPClient = Depends(Provide[Container.http_client]),
-):
-    controller = ReadController(logger=Logger, http_adapter=http_adapter)
-
-    request = controller.get_data()
-
-    return {
-        'query': "a",
-        'limit': 3,
-        'gifs': request.text,
-    }
+# @router.get('/', response_model=Response)
+# @inject
+# async def index(
+#     http_adapter: HTTPClient = Depends(Provide[Container.http_client]),
+# ):
+#     controller = ReadController(logger=Logger, http_adapter=http_adapter)
+#
+#     request = controller.get_data()
+#
+#     return {
+#         'query': "a",
+#         'limit': 3,
+#         'gifs': request.text,
+#     }
 
 
 @router.get('/plagiarism')

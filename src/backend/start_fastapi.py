@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.backend.dependencies import get_container
@@ -15,7 +16,8 @@ def create_app() -> FastAPI:
     app = FastAPI()
 
     origins = [
-        "http://localhost:5000"
+        "http://localhost:5000",
+        "http://0.0.0.0:8000",
     ]
 
     app.add_middleware(
@@ -27,6 +29,7 @@ def create_app() -> FastAPI:
     )
     app.container = container
     app.include_router(http.router)
+    app.mount("/", StaticFiles(directory="static", html=True, check_dir=True), name="static")
     return app
 
 
