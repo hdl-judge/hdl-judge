@@ -1,4 +1,4 @@
-import config from "./config"
+import { post } from "./http_requests";
 
 class File {
 	filename: string;
@@ -10,7 +10,13 @@ class Submission {
 	files: object;
 }
 
-export async function submitTest(userCode: string): Promise<string> {
+class SubmissionResponse {
+	status: string;
+	result: string;
+    message: string;
+}
+
+export async function submitTest(userCode: string): Promise<SubmissionResponse> {
 	let submission = new Submission();
 	submission.toplevel_entity = "adder_tb";
 
@@ -80,15 +86,5 @@ end behav;`;
 
     submission.files = [adder, adder_tb];
 
-    console.log(JSON.stringify(submission))
-
-	let response = await fetch(`${config.API_URL}/submit`, {
-		method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-		body: JSON.stringify(submission)
-	});
-
-	return response.json()
+	return await (await post("/submit", submission)).json()
 }
