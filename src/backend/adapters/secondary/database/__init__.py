@@ -30,5 +30,9 @@ class SQLClient(ABC):
         pass
 
     @abstractmethod
+    def list_tables(self) -> List[Text]:
+        pass
+
+    @abstractmethod
     def query(self, query_text: Text) -> List[Dict[Any, Any]]:
         pass

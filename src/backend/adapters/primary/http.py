@@ -71,3 +71,13 @@ async def submit(
 ):
     response = hdl_motor.get_waveform(submission.toplevel_entity, submission.files)
     return response
+
+
+@router.get('/setup', response_model=Response)
+@inject
+async def index(
+   database_client: SQLClient = Depends(Provide[Container.database_client]),
+):
+    controller = ReadController(logger=Logger, database_client=database_client)
+    request = controller.get_data()
+    return setup
