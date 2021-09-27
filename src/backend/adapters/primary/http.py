@@ -73,11 +73,11 @@ async def submit(
     return response
 
 
-@router.get('/setup', response_model=Response)
+@router.get('/setup')
 @inject
 async def index(
    database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = ReadController(logger=Logger, database_client=database_client)
-    request = controller.get_data()
-    return setup
+    request = controller.setup()
+    return request
