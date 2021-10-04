@@ -22,6 +22,9 @@ class ProductionContainer(BaseContainer):
         MossClient,
         BaseContainer.config.BaseConfig.idMoss
     )
+    hdl_motor = providers.Factory(
+        GHDLMotor
+    )
 
 
 class TestContainer(BaseContainer):
@@ -34,6 +37,9 @@ class TestContainer(BaseContainer):
     plagiarism_client = providers.Factory(
         MossClient,
         BaseContainer.config.BaseConfig.idMoss
+    )
+    hdl_motor = providers.Factory(
+        GHDLMotor
     )
 
 
