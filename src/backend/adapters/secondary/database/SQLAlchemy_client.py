@@ -53,6 +53,26 @@ class SQLAlchemyClient(SQLClient):
             for values in table_values
         ]
 
+    def get_multiple_where_values(
+        self, table: Text, cond_column: Dict[Text, Any]
+    ) -> List[Dict[Text, Any]]:
+        table_obj = db.Table(table, db.MetaData(), autoload=True, autoload_with=self._engine)
+        session = sessionmaker(bind=self._engine)()
+
+        if len(cond_column) > 0:
+            table_values = session.query(table_obj)
+            for key, value in cond_column.items():
+                table_values = table_values.where(getattr(table_obj.c, key) == value)
+            table_values = table_values.all()
+        else:
+            table_values = session.query(table_obj).all()
+
+        session.close()
+        return [
+            {k: v for k, v in zip(table_obj.columns.keys(), values)}
+            for values in table_values
+        ]
+
     def list_tables(self) -> List[Text]:
         inspector = inspect(self._engine)
         return list(inspector.get_table_names())

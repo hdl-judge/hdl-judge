@@ -168,14 +168,57 @@ class MainController(BaseController):
         return url, report_as_text
 
     def get_waveform_from_submission(
-        self, toplevel_entity: Text, files: List[File]
+        self, toplevel_entity: Text, files: List[Any] #List[File]
     ) -> Dict[Text, Any]:
         return self.code_motor.get_waveform(toplevel_entity, files)
 
-    def get_waveform_from_submission_db(
-        self, toplevel_entity: Text, files: List[File]
+    def get_waveform_from_submission_db_for_project(
+        self, toplevel_entity: Text, user_id: int, project_id: int
     ) -> Dict[Text, Any]:
+        files = []
+        list_projects_files_ids = self.database_client.get_multiple_where_values('projects_files', {
+                                                                        "project_id": project_id
+                                                                    })
+
+        for projects_files_id in [val['id'] for val in list_projects_files_ids]:
+
+            user_files = self.database_client.get_multiple_where_values('submission_files', {
+                                                                            "created_by": user_id,
+                                                                            "projects_files_id": projects_files_id
+                                                                        })
+            tb_files = self.database_client.get_multiple_where_values('testbench_files', {
+                                                                          "projects_files_id": projects_files_id
+                                                                      })
+            files.extend([{
+                "content": val["code"],
+                "filename": f"file_{project_id}_{projects_files_id}_{user_id}"
+            } for val in user_files])
+            files.extend([{
+                "content": val["code"],
+                "filename": f"tb_{project_id}_{projects_files_id}"
+            } for val in tb_files])
         return self.code_motor.get_waveform(toplevel_entity, files)
 
+    def get_waveform_from_submission_db_for_file(
+        self, toplevel_entity: Text, user_id: int, projects_files_id: int
+    ) -> Dict[Text, Any]:
+        files = []
+        user_files = self.database_client.get_multiple_where_values('submission_files',
+                                                                    {
+                                                                        "created_by": user_id,
+                                                                        "projects_files_id": projects_files_id
+                                                                    })
+        tb_files = self.database_client.get_multiple_where_values('testbench_files',
+                                                                  {
+                                                                      "projects_files_id": projects_files_id
+                                                                  })
+        files.extend([{
+            "content": val["code"],
+            "filename": f"file_{projects_files_id}_{user_id}"
+        } for val in user_files])
+        files.extend([{
+            "content": val["code"],
+            "filename": f"tb_{projects_files_id}"
+        } for val in tb_files])
 
-
+        return self.code_motor.get_waveform(toplevel_entity, files)
