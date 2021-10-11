@@ -9,9 +9,12 @@ from src.backend.adapters.secondary.database import SQLClient
 
 class SQLAlchemyClient(SQLClient):
     def __init__(
-            self, database_uri: Text = 'sqlite:///test_database'
+            self, database_uri: Text = 'sqlite:///test_database', test_engine=None
     ):
-        self._engine = db.create_engine(database_uri)
+        if test_engine is None:
+            self._engine = db.create_engine(database_uri)
+        else:
+            self._engine = test_engine
 
     def insert_values(
             self, table: Text, values: Dict[Text, Any], **kwargs

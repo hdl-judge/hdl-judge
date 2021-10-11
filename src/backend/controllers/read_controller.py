@@ -69,7 +69,7 @@ class MainController(BaseController):
                 "is_admin": is_admin
             }
         )
-        return self.database_client.get_values("users", "email_address", email_address)["id"]
+        return self.database_client.get_values("users", "email_address", email_address)[0]["id"]
 
     def create_project(
         self, name: Text, created_by: int, due_time: datetime
@@ -82,7 +82,7 @@ class MainController(BaseController):
                 "due_time": due_time
             }
         )
-        return self.database_client.get_values("projects", "name", name)["id"]
+        return self.database_client.get_values("projects", "name", name)[0]["id"]
 
     def create_projects_files(
         self, name: Text, project_id: int, created_by: int
@@ -95,7 +95,7 @@ class MainController(BaseController):
                 "created_by": created_by
             }
         )
-        return self.database_client.get_values("projects_files", "name", name)["id"]
+        return self.database_client.get_values("projects_files", "name", name)[0]["id"]
 
     def create_testbench_files(
         self, name: Text, projects_files_id: int, created_by: int, code: Text
@@ -109,7 +109,7 @@ class MainController(BaseController):
                 "code": code
             }
         )
-        return self.database_client.get_values("testbench_files", "name", name)["id"]
+        return self.database_client.get_values("testbench_files", "name", name)[0]["id"]
 
     def create_submission_files(
         self, name: Text, projects_files_id: int, metadata: Text, created_by: int, code: Text
@@ -150,14 +150,19 @@ class MainController(BaseController):
     def submit_all_codes_from_project_to_plagiarism(
         self, project_id: int
     ):
-        project_files_data = self.database_client.get_files("projects_files", "project_id", project_id)
-
+        project_files_data = self.database_client.get_values("projects_files", "project_id", project_id)
+        academic_id_map = {}
         for projects_file in project_files_data:
             projects_files_id = projects_file["id"]
-            submission_files = self.database_client.get_files("submission_files", "projects_files_id", projects_files_id)
+            submission_files = self.database_client.get_values("submission_files", "projects_files_id", projects_files_id)
 
             for submission in submission_files:
-                academic_id = self.database_client.get_files("user", "id", submission["created_by"])["academic_id"]
+                if submission["created_by"] not in academic_id_map:
+                    academic_id = self.database_client.get_values("user", "id", submission["created_by"])[0]["academic_id"]
+                    academic_id_map[submission["created_by"]] = academic_id
+                else:
+                    academic_id = academic_id_map[submission["created_by"]]
+
                 student_id = submission['created_by']
                 filename = f"proj{project_id}_file{projects_files_id}_id{academic_id}.vhd"
                 code = submission["code"]
@@ -190,13 +195,13 @@ class MainController(BaseController):
                                                                           "projects_files_id": projects_files_id
                                                                       })
             files.extend([{
-                "content": val["code"],
+                "content": user_f["code"],
                 "filename": f"file_{project_id}_{projects_files_id}_{user_id}"
-            } for val in user_files])
+            } for user_f in user_files])
             files.extend([{
-                "content": val["code"],
+                "content": tb_f["code"],
                 "filename": f"tb_{project_id}_{projects_files_id}"
-            } for val in tb_files])
+            } for tb_f in tb_files])
         return self.code_motor.get_waveform(toplevel_entity, files)
 
     def get_waveform_from_submission_db_for_file(

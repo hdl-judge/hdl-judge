@@ -30,7 +30,17 @@ class SQLClient(ABC):
         pass
 
     @abstractmethod
+    def get_multiple_where_values(
+            self, table: Text, cond_column: Dict[Text, Any]
+    ) -> List[Dict[Text, Any]]:
+        pass
+
+    @abstractmethod
     def list_tables(self) -> List[Text]:
+        pass
+
+    @abstractmethod
+    def create_table(self, metadata: Any) -> List[Text]:
         pass
 
     @abstractmethod
