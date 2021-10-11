@@ -2,15 +2,19 @@ import sqlalchemy as db
 
 from typing import Text, Dict, Any, List
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import inspect, MetaData
 
 from src.backend.adapters.secondary.database import SQLClient
 
 
 class SQLAlchemyClient(SQLClient):
     def __init__(
-            self, database_uri: Text = 'sqlite:///test_database'
+            self, database_uri: Text = 'sqlite:///test_database', test_engine=None
     ):
-        self._engine = db.create_engine(database_uri)
+        if test_engine is None:
+            self._engine = db.create_engine(database_uri)
+        else:
+            self._engine = test_engine
 
     def insert_values(
             self, table: Text, values: Dict[Text, Any], **kwargs
@@ -52,6 +56,33 @@ class SQLAlchemyClient(SQLClient):
             for values in table_values
         ]
 
+    def get_multiple_where_values(
+        self, table: Text, cond_column: Dict[Text, Any]
+    ) -> List[Dict[Text, Any]]:
+        table_obj = db.Table(table, db.MetaData(), autoload=True, autoload_with=self._engine)
+        session = sessionmaker(bind=self._engine)()
+
+        if len(cond_column) > 0:
+            table_values = session.query(table_obj)
+            for key, value in cond_column.items():
+                table_values = table_values.where(getattr(table_obj.c, key) == value)
+            table_values = table_values.all()
+        else:
+            table_values = session.query(table_obj).all()
+
+        session.close()
+        return [
+            {k: v for k, v in zip(table_obj.columns.keys(), values)}
+            for values in table_values
+        ]
+
+    def list_tables(self) -> List[Text]:
+        inspector = inspect(self._engine)
+        return list(inspector.get_table_names())
+
+    def create_table(self, metadata: MetaData):
+        metadata.create_all(self._engine)
+
     def query(self, query_text: Text) -> List[Dict[Any, Any]]:
         from sqlalchemy.sql import text
         values = self._engine.execute(text(query_text))
@@ -62,8 +93,6 @@ class SQLAlchemyClient(SQLClient):
             ]
         else:
             return []
-
-
 
 
 if __name__ == "__main__":
@@ -84,6 +113,7 @@ if __name__ == "__main__":
         client.delete_values("products", "product_id", id+1)
         print(client.get_values("products", "product_id", id))
         print((client.query("SELECT * FROM products")))
+        print((client.list_tables()))
     except Exception as ex:
         client.delete_values("products", "product_id", id)
         client.delete_values("products", "product_id", id + 1)

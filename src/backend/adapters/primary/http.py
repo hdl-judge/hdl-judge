@@ -4,7 +4,7 @@ from logging import Logger
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from src.backend.controllers.read_controller import ReadController
+from src.backend.controllers.read_controller import MainController
 from src.backend.adapters.secondary.http import HTTPClient
 from src.backend.adapters.secondary.database import SQLClient
 from src.backend.adapters.secondary.plagiarism_detector import PlagiarismDetectorClient
@@ -48,7 +48,7 @@ Container = get_container()
 async def index(
     plagiarism_client: PlagiarismDetectorClient = Depends(Provide[Container.plagiarism_client]),
 ):
-    controller = ReadController(logger=Logger, plagiarism_client=plagiarism_client)
+    controller = MainController(logger=Logger, plagiarism_client=plagiarism_client)
     response = controller.submit_codes_to_plagiarism()
     return response
 
@@ -71,3 +71,13 @@ async def submit(
 ):
     response = hdl_motor.get_waveform(submission.toplevel_entity, submission.files)
     return response
+
+
+@router.get('/setup')
+@inject
+async def index(
+   database_client: SQLClient = Depends(Provide[Container.database_client]),
+):
+    controller = ReadController(logger=Logger, database_client=database_client)
+    request = controller.setup()
+    return request
