@@ -18,8 +18,8 @@ class SubmissionResponse {
 
 export async function submitTest(items: File[]): Promise<SubmissionResponse> {
 	let submission = new Submission();
-	submission.toplevel_entity = "adder_tb";
-    submission.files = items.filter(item => item.filename.endsWith(".vhdl"));
+	submission.toplevel_entity = "adder";
+    submission.files = items.filter(item => item.filename.endsWith(".vhdl") || item.filename.endsWith(".json"));
 
 	return await (await post("/submit", submission)).json()
 }

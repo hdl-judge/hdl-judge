@@ -20,63 +20,15 @@
 		co : out bit
 	);
 end adder;`},
-        {filename: "adder_tb.vhdl", content: `--  A testbench has no ports.
-entity adder_tb is
-end adder_tb;
-
-architecture behav of adder_tb is
-  --  Declaration of the component that will be instantiated.
-  component adder
-    port (i0, i1 : in bit; ci : in bit; s : out bit; co : out bit);
-  end component;
-
-  --  Specifies which entity is bound with the component.
-  for adder_0: adder use entity work.adder;
-  signal i0, i1, ci, s, co : bit;
-begin
-  --  Component instantiation.
-  adder_0: adder port map (i0 => i0, i1 => i1, ci => ci, s => s, co => co);
-
-  --  This process does the real job.
-  process
-    type pattern_type is record
-      --  The inputs of the adder.
-      i0, i1, ci : bit;
-      --  The expected outputs of the adder.
-      s, co : bit;
-    end record;
-    --  The patterns to apply.
-    type pattern_array is array (natural range <>) of pattern_type;
-    constant patterns : pattern_array :=
-      (('0', '0', '0', '0', '0'),
-       ('0', '0', '1', '1', '0'),
-       ('0', '1', '0', '1', '0'),
-       ('0', '1', '1', '0', '1'),
-       ('1', '0', '0', '1', '0'),
-       ('1', '0', '1', '0', '1'),
-       ('1', '1', '0', '0', '1'),
-       ('1', '1', '1', '1', '1'));
-  begin
-    --  Check each pattern.
-    for i in patterns'range loop
-      --  Set the inputs.
-      i0 <= patterns(i).i0;
-      i1 <= patterns(i).i1;
-      ci <= patterns(i).ci;
-      --  Wait for the results.
-      wait for 1 ns;
-      --  Check the outputs.
-      assert s = patterns(i).s
-        report "bad sum value" severity error;
-      assert co = patterns(i).co
-        report "bad carry out value" severity error;
-    end loop;
-    assert false report "end of test" severity note;
-    --  Wait forever; this will finish the simulation.
-    wait;
-  end process;
-
-end behav;`}
+        {filename: "wave.json", content: `{
+    "signal": [
+        {"dir": "in",  "name": "i0", "type": "bit", "wave": "00001111"},
+        {"dir": "in",  "name": "i1", "type": "bit", "wave": "00110011"},
+        {"dir": "in",  "name": "ci", "type": "bit", "wave": "01010101"},
+        {"dir": "out", "name": "s",  "type": "bit", "wave": "01101001"},
+        {"dir": "out", "name": "co", "type": "bit", "wave": "00010111"}
+    ]
+}`}
     ];
     let currentTab: number = 0;
 
@@ -92,15 +44,41 @@ end behav;`}
         vcd = response.result;
     }
 
-    function onChangeTab(event) {
-        tabItems[currentTab].content = editor.getValue();
-        editor.setValue(tabItems[event.detail].content);
-        currentTab = event.detail;
-    }
-
     onMount(() => {
         editor.setValue(tabItems[currentTab].content);
     });
+
+    function onChangeTab(event) {
+        changeTab(event.detail);
+    }
+
+    function changeTab(newTabIndex) {
+        tabItems[currentTab].content = editor.getValue();
+        editor.setValue(tabItems[newTabIndex].content);
+        currentTab = newTabIndex;
+    }
+
+    function addTab() {
+        tabItems.push({filename: "nova_aba", content: ""});
+        changeTab(tabItems.length-1);
+    }
+
+    function renameTab(event) {
+        let newName = prompt("Digite o nome do arquivo", tabItems[event.detail].filename);
+        if (newName)
+            tabItems[event.detail].filename = newName
+    }
+
+    function deleteTab() {
+        let confirmDeleteTab = confirm(`Deseja apagar a aba ${tabItems[currentTab].filename}?`);
+        if (confirmDeleteTab) {
+            tabItems.splice(currentTab, 1);
+            let newTabIndex = currentTab > tabItems.length-1 ? tabItems.length-1 : currentTab;
+            editor.setValue(tabItems[newTabIndex].content);
+            currentTab = newTabIndex;
+            tabItems = tabItems;
+        }
+    }
 </script>
 
 <main>
@@ -109,7 +87,14 @@ end behav;`}
     </header>
 
     <section class="tabs">
-        <Tabs activeTabValue={currentTab} items={tabItems} on:changeTab={onChangeTab}/>
+        <Tabs
+            activeTabValue={currentTab}
+            items={tabItems}
+            on:changeTab={onChangeTab}
+            on:addTab={addTab}
+            on:renameTab={renameTab}
+            on:deleteTab={deleteTab}
+        />
     </section>
 
     <nav>
