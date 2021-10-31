@@ -21,7 +21,7 @@
 
 <ul>
     <li>
-        <img id="delete" on:click={() => dispatch('deleteTab')}  src="icons/x.svg" />
+        <img alt="deletar" id="delete" on:click={() => dispatch('deleteTab')}  src="icons/x.svg" />
     </li>
     {#if Array.isArray(items)}
         {#each items as item, i}
@@ -33,7 +33,7 @@
         {/each}
     {/if}
     <li>
-        <img id="add" on:click={() => dispatch('addTab')} src="icons/plus.svg" />
+        <img alt="adicionar" id="add" on:click={() => dispatch('addTab')} src="icons/plus.svg" />
     </li>
 </ul>
 
