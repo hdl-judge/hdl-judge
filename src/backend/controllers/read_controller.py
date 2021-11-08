@@ -127,9 +127,9 @@ class MainController(BaseController):
         return self.database_client.get_values("submission_files", "name", name)["id"] #Corrigir dps
 
     def get_table_all_or_by_id(
-        self, id: int = None
+        self, table_name: Text, id: int = None
     ) -> Dict[Text, Any]:
-        return self.database_client.get_values("projects", "id", id)
+        return self.database_client.get_values(table_name, "id", id)
 
     def submit_all_codes_from_one_file_to_plagiarism(
         self, projects_files_id: int
