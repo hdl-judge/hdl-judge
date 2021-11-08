@@ -6,12 +6,14 @@ from src.backend.dependencies import get_container
 from src.backend.adapters.primary import http
 
 
-def create_app() -> FastAPI:
+def create_app(is_test: bool = False) -> FastAPI:
 
     Container = get_container()
     container = Container()
-    container.config.from_yaml('config.yml')
     container.wire(modules=[http])
+
+    if not is_test:
+        container.config.from_yaml('config.yml')
 
     app = FastAPI()
 

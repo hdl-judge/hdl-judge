@@ -192,3 +192,17 @@ async def create_submission_files(
         code=code
     )
     return response
+
+
+@router.get('/submit_all_codes_from_project_to_plagiarism')
+@inject
+async def submit_all_codes_from_project_to_plagiarism(
+    project_id: int,
+    plagiarism_client: PlagiarismDetectorClient = Depends(Provide[Container.plagiarism_client]),
+):
+    controller = MainController(logger=Logger, plagiarism_client=plagiarism_client)
+    response = controller.submit_all_codes_from_project_to_plagiarism(
+        project_id=project_id
+    )
+    return response
+
