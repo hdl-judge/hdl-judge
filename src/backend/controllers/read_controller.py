@@ -122,7 +122,7 @@ class MainController(BaseController):
                 "code": code
             }
         )
-        return self.database_client.get_values("submission_files", "name", name)["id"] #Corrigir dps
+        return self.database_client.get_values("submission_files", "name", name)[0]["id"] #Corrigir dps
 
     def get_table_all_or_by_id(
         self, table_name: Text, id: int = None
