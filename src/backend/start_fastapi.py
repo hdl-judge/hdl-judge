@@ -8,15 +8,15 @@ from src.backend.adapters.primary import http
 
 def create_app(is_test: bool = False) -> FastAPI:
 
-    if not is_test:
+    if is_test:
         Container = get_container("test")
         container = Container()
         container.wire(modules=[http])
-        container.config.from_yaml('config.yml')
     else:
         Container = get_container()
         container = Container()
         container.wire(modules=[http])
+        container.config.from_yaml('config.yml')
 
     app = FastAPI()
 
