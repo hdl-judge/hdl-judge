@@ -3,6 +3,8 @@ from logging import Logger
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from typing import Optional, Text
+from datetime import datetime
 
 from src.backend.controllers.read_controller import MainController
 from src.backend.adapters.secondary.http import HTTPClient
@@ -78,6 +80,129 @@ async def submit(
 async def index(
    database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
-    controller = ReadController(logger=Logger, database_client=database_client)
+    controller = MainController(logger=Logger, database_client=database_client)
     request = controller.setup()
     return request
+
+
+#Principal routes
+
+@router.get('/get_values/{table_name}')
+@inject
+async def get_values(
+    table_name: Text,
+    id: Optional[Text] = None,
+    database_client: SQLClient = Depends(Provide[Container.database_client]),
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.get_table_all_or_by_id(table_name, id)
+    return response
+
+
+@router.get('/create_user')
+@inject
+async def create_user(
+    name: Text,
+    email_address: Text,
+    academic_id: Text,
+    is_professor: bool,
+    is_admin: bool,
+    database_client: SQLClient = Depends(Provide[Container.database_client]),
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.create_user(
+        name=name,
+        email_address=email_address,
+        academic_id=academic_id,
+        is_professor=is_professor,
+        is_admin=is_admin
+    )
+    return response
+
+
+@router.get('/create_project')
+@inject
+async def create_project(
+    name: Text,
+    created_by: int,
+    due_time: datetime,
+    database_client: SQLClient = Depends(Provide[Container.database_client]),
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.create_project(
+        name=name,
+        created_by=created_by,
+        due_time=due_time
+    )
+    return response
+
+
+@router.get('/create_projects_files')
+@inject
+async def create_projects_files(
+    name: Text,
+    created_by: int,
+    project_id: int,
+    database_client: SQLClient = Depends(Provide[Container.database_client]),
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.create_projects_files(
+        name=name,
+        project_id=project_id,
+        created_by=created_by
+    )
+    return response
+
+
+@router.get('/create_testbench_files')
+@inject
+async def create_testbench_files(
+    name: Text,
+    created_by: int,
+    projects_files_id: int,
+    code: Text,
+    database_client: SQLClient = Depends(Provide[Container.database_client]),
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.create_testbench_files(
+        name=name,
+        projects_files_id=projects_files_id,
+        created_by=created_by,
+        code=code
+    )
+    return response
+
+
+@router.get('/create_submission_files')
+@inject
+async def create_submission_files(
+    name: Text,
+    created_by: int,
+    projects_files_id: int,
+    metadata: Text,
+    code: Text,
+    database_client: SQLClient = Depends(Provide[Container.database_client]),
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.create_submission_files(
+        name=name,
+        projects_files_id=projects_files_id,
+        created_by=created_by,
+        metadata=metadata,
+        code=code
+    )
+    return response
+
+
+@router.get('/submit_all_codes_from_project_to_plagiarism')
+@inject
+async def submit_all_codes_from_project_to_plagiarism(
+    project_id: int,
+    plagiarism_client: PlagiarismDetectorClient = Depends(Provide[Container.plagiarism_client]),
+):
+    controller = MainController(logger=Logger, plagiarism_client=plagiarism_client)
+    response = controller.submit_all_codes_from_project_to_plagiarism(
+        project_id=project_id
+    )
+    return response
+

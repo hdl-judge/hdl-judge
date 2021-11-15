@@ -5,8 +5,8 @@ from sqlalchemy.sql import func
 def create_tables():
     meta = MetaData()
 
-    user = Table(
-        'user', meta,
+    users = Table(
+        'users', meta,
         Column('id', Integer, primary_key=True, autoincrement=True),
         Column('name', String),
         Column('email_address', String, unique=True),
@@ -20,7 +20,7 @@ def create_tables():
         Column('id', Integer, primary_key=True, autoincrement=True),
         Column('name', String, unique=True),
         Column('created_at', DateTime, server_default=func.now()),
-        Column('created_by', Integer, ForeignKey("user.id")),
+        Column('created_by', Integer, ForeignKey("users.id")),
         Column('due_time', DateTime),
     )
 
@@ -30,7 +30,7 @@ def create_tables():
         Column('name', String, unique=True),
         Column('project_id', Integer, ForeignKey("projects.id")),
         Column('created_at', DateTime, server_default=func.now()),
-        Column('created_by', Integer, ForeignKey("user.id"))
+        Column('created_by', Integer, ForeignKey("users.id"))
     )
 
     testbench_files = Table(
@@ -39,7 +39,7 @@ def create_tables():
         Column('name', String, unique=True),
         Column('projects_files_id', Integer, ForeignKey("projects_files.id")),
         Column('created_at', DateTime, server_default=func.now()),
-        Column('created_by', Integer, ForeignKey("user.id")),
+        Column('created_by', Integer, ForeignKey("users.id")),
         Column('code', String)
     )
 
@@ -51,7 +51,7 @@ def create_tables():
         Column('metadata', String),
         Column('code', String),
         Column('created_at', DateTime, server_default=func.now()),
-        Column('created_by', Integer, ForeignKey("user.id")),
+        Column('created_by', Integer, ForeignKey("users.id")),
     )
 
     return meta
