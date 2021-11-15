@@ -25,9 +25,9 @@ def client():
             "INSERT INTO users (name, email_address, academic_id, is_professor, is_admin) VALUES ('p1', 'e1@test.com', 'ABC_1', True, True);",
             "INSERT INTO users (name, email_address, academic_id, is_professor, is_admin) VALUES ('p2', 'e2@test.com', 'ABC_2', False, False);",
             "INSERT INTO users (name, email_address, academic_id, is_professor, is_admin) VALUES ('p3', 'e3@test.com', 'ABC_3', False, False);",
-            "INSERT INTO projects (name, created_by, due_time) VALUES ('project_1', 1, '2021-11-2020T22:44:00.000000');",
-            "INSERT INTO projects (name, created_by, due_time) VALUES ('project_2', 2, '2021-11-2020T22:44:00.000000');",
-            "INSERT INTO projects (name, created_by, due_time) VALUES ('project_3', 3, '2021-11-2020T22:44:00.000000');",
+            "INSERT INTO projects (name, created_by) VALUES ('project_1', 1);",
+            "INSERT INTO projects (name, created_by) VALUES ('project_2', 2);",
+            "INSERT INTO projects (name, created_by) VALUES ('project_3', 3);",
             "INSERT INTO projects_files (name, project_id, created_by) VALUES ('projectfile_1', 1, 1);",
             "INSERT INTO projects_files (name, project_id, created_by) VALUES ('projectfile_2', 1, 2);",
             "INSERT INTO projects_files (name, project_id, created_by) VALUES ('projectfile_3', 1, 3);",
@@ -77,7 +77,7 @@ def test_create_user(client):
 
 
 def test_create_project(client):
-    payload = {"name": "project1", "created_by": 1, "due_time": "2021-11-2020T22:44:04.794231"}
+    payload = {"name": "project1", "created_by": 1}
 
     response = client.post(
         "/create_project",

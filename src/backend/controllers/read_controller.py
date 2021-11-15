@@ -1,6 +1,5 @@
 from logging import Logger
 from typing import Optional, List, Any, Dict, Text
-from datetime import datetime
 
 from src.backend.controllers import BaseController
 
@@ -72,14 +71,13 @@ class MainController(BaseController):
         return self.database_client.get_values("users", "email_address", email_address)[0]["id"]
 
     def create_project(
-        self, name: Text, created_by: int, due_time: datetime
+        self, name: Text, created_by: int
     ):
         self.database_client.insert_values(
             "projects",
             {
                 "name": name,
-                "created_by": created_by,
-                "due_time": due_time
+                "created_by": created_by
             }
         )
         return self.database_client.get_values("projects", "name", name)[0]["id"]

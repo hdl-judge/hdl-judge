@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
 
 
 class UserModel(BaseModel):
@@ -14,7 +13,6 @@ class UserModel(BaseModel):
 class ProjectModel(BaseModel):
     name: str
     created_by: int
-    due_time: datetime
 
 
 class ProjectFilesModel(BaseModel):

@@ -20,8 +20,7 @@ def create_tables():
         Column('id', Integer, primary_key=True, autoincrement=True),
         Column('name', String, unique=True),
         Column('created_at', DateTime, server_default=func.now()),
-        Column('created_by', Integer, ForeignKey("users.id")),
-        Column('due_time', DateTime),
+        Column('created_by', Integer, ForeignKey("users.id"))
     )
 
     projects_files = Table(
