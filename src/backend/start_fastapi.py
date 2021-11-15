@@ -8,12 +8,15 @@ from src.backend.adapters.primary import http
 
 def create_app(is_test: bool = False) -> FastAPI:
 
-    Container = get_container()
-    container = Container()
-    container.wire(modules=[http])
-
     if not is_test:
+        Container = get_container("test")
+        container = Container()
+        container.wire(modules=[http])
         container.config.from_yaml('config.yml')
+    else:
+        Container = get_container()
+        container = Container()
+        container.wire(modules=[http])
 
     app = FastAPI()
 
@@ -33,7 +36,7 @@ def create_app(is_test: bool = False) -> FastAPI:
     app.container = container
     app.include_router(http.router)
     app.mount("/", StaticFiles(directory="static", html=True, check_dir=True), name="static")
-    return app
+    return app, container
 
 
-app = create_app()
+app, container = create_app()

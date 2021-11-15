@@ -13,7 +13,7 @@ from src.backend.adapters.secondary.plagiarism_detector import PlagiarismDetecto
 from src.backend.adapters.secondary.hdl_motor import HDLMotor
 from src.backend.adapters.primary.api.schemas.submission import Submission
 from src.backend.adapters.primary.api.schemas.submission_return import SubmissionReturn
-
+from src.backend.schema.request import UserModel, ProjectModel, ProjectFilesModel, TestbenchFiles, SubmissionFiles
 
 from src.backend.dependencies import get_container
 from dependency_injector.wiring import inject, Provide
@@ -99,99 +99,60 @@ async def get_values(
     return response
 
 
-@router.get('/create_user')
+@router.post('/create_user')
 @inject
 async def create_user(
-    name: Text,
-    email_address: Text,
-    academic_id: Text,
-    is_professor: bool,
-    is_admin: bool,
+    data: UserModel,
     database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
-    response = controller.create_user(
-        name=name,
-        email_address=email_address,
-        academic_id=academic_id,
-        is_professor=is_professor,
-        is_admin=is_admin
-    )
+    response = controller.create_user(**data.dict())
     return response
 
 
-@router.get('/create_project')
+@router.post('/create_project')
 @inject
 async def create_project(
-    name: Text,
-    created_by: int,
-    due_time: datetime,
+    data: ProjectModel,
     database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
-    response = controller.create_project(
-        name=name,
-        created_by=created_by,
-        due_time=due_time
-    )
+    response = controller.create_project(**data.dict())
     return response
 
 
-@router.get('/create_projects_files')
+@router.post('/create_projects_files')
 @inject
 async def create_projects_files(
-    name: Text,
-    created_by: int,
-    project_id: int,
+    data: ProjectFilesModel,
     database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
-    response = controller.create_projects_files(
-        name=name,
-        project_id=project_id,
-        created_by=created_by
-    )
+    response = controller.create_projects_files(**data.dict())
     return response
 
 
-@router.get('/create_testbench_files')
+@router.post('/create_testbench_files')
 @inject
 async def create_testbench_files(
-    name: Text,
-    created_by: int,
-    projects_files_id: int,
-    code: Text,
+    data: TestbenchFiles,
     database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
-    response = controller.create_testbench_files(
-        name=name,
-        projects_files_id=projects_files_id,
-        created_by=created_by,
-        code=code
-    )
+    response = controller.create_testbench_files(**data.dict())
     return response
 
 
-@router.get('/create_submission_files')
+@router.post('/create_submission_files')
 @inject
 async def create_submission_files(
-    name: Text,
-    created_by: int,
-    projects_files_id: int,
-    metadata: Text,
-    code: Text,
+    data: SubmissionFiles,
     database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
-    response = controller.create_submission_files(
-        name=name,
-        projects_files_id=projects_files_id,
-        created_by=created_by,
-        metadata=metadata,
-        code=code
-    )
+    response = controller.create_submission_files(**data.dict())
     return response
+
 
 
 @router.get('/submit_all_codes_from_project_to_plagiarism')

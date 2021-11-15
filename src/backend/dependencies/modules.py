@@ -14,7 +14,6 @@ from src.backend.adapters.secondary.hdl_motor import HDLMotor
 
 class BaseContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
-    print(config)
 
 
 class ProductionContainer(BaseContainer):
