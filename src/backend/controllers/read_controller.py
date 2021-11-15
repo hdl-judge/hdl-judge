@@ -129,6 +129,11 @@ class MainController(BaseController):
     ) -> Dict[Text, Any]:
         return self.database_client.get_values(table_name, "id", id)
 
+    def delete_record_by_id(
+        self, table_name: Text, id: int
+    ) -> Dict[Text, Any]:
+        return self.database_client.delete_values(table_name, "id", id)
+
     def submit_all_codes_from_one_file_to_plagiarism(
         self, projects_files_id: int
     ):

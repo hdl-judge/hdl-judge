@@ -99,6 +99,18 @@ async def get_values(
     return response
 
 
+@router.delete('/delete_value/{table_name}')
+@inject
+async def delete_value(
+    table_name: Text,
+    id: int,
+    database_client: SQLClient = Depends(Provide[Container.database_client]),
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.delete_record_by_id(table_name, id)
+    return response
+
+
 @router.post('/create_user')
 @inject
 async def create_user(

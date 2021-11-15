@@ -37,7 +37,7 @@ def controller(
         plagiarism_client=plagiarism_client,
         code_motor=code_motor
     )
-    return create_autospec(MainController)
+    return controller
 
 
 def test_base(controller):
