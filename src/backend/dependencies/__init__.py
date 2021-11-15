@@ -13,6 +13,7 @@ MODULE_MAP = {
 }
 
 
-def get_container():
-    env = os.getenv('SERVICE_ENV', 'development')
+def get_container(env: str = None):
+    if env is None:
+        env = os.getenv('SERVICE_ENV', 'development')
     return MODULE_MAP.get(env, DevelopmentContainer)
