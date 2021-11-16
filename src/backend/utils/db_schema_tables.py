@@ -26,10 +26,11 @@ def create_tables():
     projects_files = Table(
         'projects_files', meta,
         Column('id', Integer, primary_key=True, autoincrement=True),
-        Column('name', String, unique=True),
+        Column('name', String),
         Column('project_id', Integer, ForeignKey("projects.id")),
         Column('created_at', DateTime, server_default=func.now()),
-        Column('created_by', Integer, ForeignKey("users.id"))
+        Column('created_by', Integer, ForeignKey("users.id")),
+        Column('default_code', String)
     )
 
     testbench_files = Table(
