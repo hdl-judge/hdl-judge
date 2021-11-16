@@ -83,14 +83,15 @@ class MainController(BaseController):
         return self.database_client.get_values("projects", "name", name)[0]["id"]
 
     def create_projects_files(
-        self, name: Text, project_id: int, created_by: int
+        self, name: Text, project_id: int, created_by: int, default_code: Text
     ):
         self.database_client.insert_values(
             "projects_files",
             {
                 "name": name,
                 "project_id": project_id,
-                "created_by": created_by
+                "created_by": created_by,
+                default_code: default_code
             }
         )
         return self.database_client.get_values("projects_files", "name", name)[0]["id"]
