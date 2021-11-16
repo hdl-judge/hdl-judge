@@ -137,3 +137,5 @@ config.yml
 
 static/*
 !static/.gitkeep
+
+test_database

@@ -21,11 +21,14 @@ def create_app(is_test: bool = False) -> FastAPI:
     app = FastAPI()
 
     origins = [
-        "http://localhost:8000",
-        "http://0.0.0.0:8000",
-        "http://127.0.0.1:8000",
+        "http://localhost:5000",
+        "http://0.0.0.0:5000",
+        "http://127.0.0.1:5000",
     ]
 
+    app.container = container
+    app.include_router(http.router)
+    app.mount("/", StaticFiles(directory="static", html=True, check_dir=True), name="static")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
@@ -33,9 +36,6 @@ def create_app(is_test: bool = False) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    app.container = container
-    app.include_router(http.router)
-    app.mount("/", StaticFiles(directory="static", html=True, check_dir=True), name="static")
     return app, container
 
 

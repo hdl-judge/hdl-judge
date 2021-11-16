@@ -1,15 +1,14 @@
 <script lang="ts">
     import Router from 'svelte-spa-router'
-    import { link } from 'svelte-spa-router'
-    import active from 'svelte-spa-router/active'
 	import Home from './Home.svelte';
 	import Projects from './Projects.svelte';
 	import Exercise from './Exercise.svelte';
+	import Navbar from '../components/Navbar.svelte';
 
     const routes = {
         '/': Home,
-        '/projects/:id': Exercise,
         '/projects': Projects,
+        '/projects/:id': Exercise,
         '*': Home,
     }
 
@@ -21,12 +20,12 @@
         <h1>HDL Judge</h1>
     </header>
 
-    <nav>
-        <a href="/" use:link use:active class="nav-button">Home</a>
-        <a href="/projects" use:link use:active class="nav-button">Projetos</a>
-        <div class="nav-button">Alunos</div>
-        <div class="nav-button">Submissões</div>
-    </nav>
+    <Navbar items={[
+        { name: "Home", link: "/" },
+        { name: "Projetos", link: "/projects" },
+        { name: "Alunos", link: "/students" },
+        { name: "Submissões", link: "/submissions" },
+    ]} />
 
     <section class="content">
         <Router {routes}/>
@@ -48,29 +47,6 @@
     header {
         background: #262626;
         grid-area: h;
-    }
-
-    nav {
-        background: #333;
-        grid-area: n;
-        display: flex;
-        color: white;
-    }
-
-    .nav-button {
-        margin: 0.3rem;
-        padding: 0.5rem;
-        border-radius: 6px;
-        color: white;
-    }
-
-    .nav-button:hover {
-        background: dimgray;
-        cursor: pointer;
-    }
-
-    :global(.active) {
-        background: dimgray;
     }
 
     .content {

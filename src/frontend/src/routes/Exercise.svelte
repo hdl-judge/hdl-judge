@@ -1,41 +1,24 @@
 <script lang="ts">
-    import {submitTest, File} from "../utils/api";
-    import {createAndDownloadFile} from "../utils/utils";
-    import {ResponseStatus} from "../utils/response_status";
+    import { submitTest, getFilesFromProject, saveProjectFiles } from "../utils/api";
+    import { createAndDownloadFile } from "../utils/utils";
+    import { ResponseStatus } from "../utils/response_status";
     import Tabs from "../components/Tabs.svelte";
     import TextEditor from "../components/TextEditor.svelte";
     import CodeMirror from "codemirror";
-    import {onMount} from "svelte";
+    import { onMount } from "svelte";
 
+    export let params: any = {};
     let editor: CodeMirror.EditorFromTextArea;
     let message: string = "";
     let vcd: string;
-    let tabItems: File[] = [
-        {filename: "intrucoes.txt", content: "Implemente um somador com a interface apresentada"},
-        {filename: "adder.vhdl", content: `entity adder is
-	port(
-		i0, i1 : in bit;
-		ci : in bit;
-		s : out bit;
-		co : out bit
-	);
-end adder;`},
-        {filename: "wave.json", content: `{
-    "signal": [
-        {"dir": "in",  "name": "i0", "type": "bit", "wave": "00001111"},
-        {"dir": "in",  "name": "i1", "type": "bit", "wave": "00110011"},
-        {"dir": "in",  "name": "ci", "type": "bit", "wave": "01010101"},
-        {"dir": "out", "name": "s",  "type": "bit", "wave": "01101001"},
-        {"dir": "out", "name": "co", "type": "bit", "wave": "00010111"}
-    ]
-}`}
-    ];
     let currentTab: number = 0;
+    let storageKey: string = `project-${params.id}`;
+    let tabs: string[] = [];
 
     async function onSubmit(): Promise<void> {
-        tabItems[currentTab].content = editor.getValue();
+        let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
 
-        let response = await submitTest(tabItems);
+        let response = await submitTest(storedTabItems);
 
         message = response.status == ResponseStatus.OK
                 ? "Código simulado com sucesso.\n"
@@ -44,61 +27,104 @@ end adder;`},
         vcd = response.result;
     }
 
-    onMount(() => {
-        editor.setValue(tabItems[currentTab].content);
+    async function onSaveFiles(): Promise<void> {
+        let storageKey = `project-${params.id}`;
+        let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
+
+        await saveProjectFiles(storedTabItems, params.id);
+
+        message = "Arquivos salvos.\n";
+    }
+
+    onMount(async () => {
+        let stored = localStorage.getItem(storageKey);
+        if (!stored) {
+            let tabItems = await getFilesFromProject(params.id);
+            stored = JSON.stringify(tabItems);
+            localStorage.setItem(storageKey, stored);
+        }
+        let storedTabItems = JSON.parse(stored);
+        tabs = storedTabItems.map(x => x.filename);
+        editor.setValue(storedTabItems[currentTab].content);
+        editor.on("change", onChangeContent);
     });
+
+    function onChangeContent() {
+        let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
+
+        storedTabItems[currentTab].content = editor.getValue();
+        localStorage.setItem(storageKey, JSON.stringify(storedTabItems));
+    }
 
     function onChangeTab(event) {
         changeTab(event.detail);
     }
 
     function changeTab(newTabIndex) {
-        tabItems[currentTab].content = editor.getValue();
-        editor.setValue(tabItems[newTabIndex].content);
+        let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
         currentTab = newTabIndex;
+        editor.setValue(storedTabItems[newTabIndex].content);
     }
 
     function addTab() {
-        tabItems.push({filename: "nova_aba", content: ""});
-        changeTab(tabItems.length-1);
+        let newFilename = "nova_aba";
+
+        let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
+        storedTabItems.push({
+            filename: newFilename,
+            content: "",
+        });
+        localStorage.setItem(storageKey, JSON.stringify(storedTabItems));
+
+        tabs.push(newFilename);
+        changeTab(tabs.length-1);
     }
 
     function renameTab(event) {
-        let newName = prompt("Digite o nome do arquivo", tabItems[event.detail].filename);
-        if (newName)
-            tabItems[event.detail].filename = newName
+        let newName = prompt("Digite o nome do arquivo", tabs[event.detail]);
+        if (newName) {
+            let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
+            storedTabItems[event.detail].filename = newName;
+            localStorage.setItem(storageKey, JSON.stringify(storedTabItems));
+
+            tabs[event.detail] = newName;
+        }
     }
 
     function deleteTab() {
-        let confirmDeleteTab = confirm(`Deseja apagar a aba ${tabItems[currentTab].filename}?`);
+        let confirmDeleteTab = confirm(`Deseja apagar a aba ${tabs[currentTab]}?`);
         if (confirmDeleteTab) {
-            tabItems.splice(currentTab, 1);
-            let newTabIndex = currentTab > tabItems.length-1 ? tabItems.length-1 : currentTab;
-            editor.setValue(tabItems[newTabIndex].content);
+            let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
+            storedTabItems.splice(currentTab, 1);
+            localStorage.setItem(storageKey, JSON.stringify(storedTabItems));
+
+            tabs.splice(currentTab, 1);
+            let newTabIndex = currentTab > tabs.length-1 ? tabs.length-1 : currentTab;
             currentTab = newTabIndex;
-            tabItems = tabItems;
+            editor.setValue(storedTabItems[newTabIndex].content);
+            tabs = tabs;
         }
     }
 </script>
 
 <section class="panel">
-    <section class="tabs">
-        <Tabs
-            activeTabValue={currentTab}
-            items={tabItems}
-            on:changeTab={onChangeTab}
-            on:addTab={addTab}
-            on:renameTab={renameTab}
-            on:deleteTab={deleteTab}
-        />
-    </section>
+    <Tabs
+        activeTabValue={currentTab}
+        items={tabs}
+        on:changeTab={onChangeTab}
+        on:addTab={addTab}
+        on:renameTab={renameTab}
+        on:deleteTab={deleteTab}
+    />
 
     <nav>
         <div class="controls">
             {#if vcd}
-                <button on:click={() => createAndDownloadFile(vcd, "result", "vcd")}>Download VCD</button>
+                <button on:click={() => createAndDownloadFile(vcd, "result", "vcd")}>
+                    Download VCD
+                </button>
             {/if}
-            <button on:click={onSubmit}>Enviar</button>
+            <button on:click={onSaveFiles}>Salvar</button>
         </div>
     </nav>
 
@@ -116,10 +142,10 @@ end adder;`},
         height: 100%;
         width: 100%;
         display: grid;
-        grid-template: 3em auto / 1fr 1fr;
+        grid-template: 2.3em auto / 1fr 1fr;
         grid-template-areas:
-                "t n"
-                "e r";
+            "t n"
+            "e r";
     }
 
     nav {
@@ -127,11 +153,6 @@ end adder;`},
         grid-area: n;
         display: flex;
         justify-content: flex-end;
-    }
-
-    .tabs {
-        background: #333;
-        grid-area: t;
     }
 
     .editor {
@@ -158,6 +179,7 @@ end adder;`},
     }
 
     button {
-        margin: 0.5em 1em;
+        margin: 0 0.3rem 0 0;
+        padding: 0.3rem;
     }
 </style>

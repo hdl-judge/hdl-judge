@@ -91,7 +91,7 @@ class MainController(BaseController):
                 "name": name,
                 "project_id": project_id,
                 "created_by": created_by,
-                default_code: default_code
+                "default_code": default_code
             }
         )
         return self.database_client.get_values("projects_files", "name", name)[0]["id"]

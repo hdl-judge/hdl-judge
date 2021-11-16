@@ -6,7 +6,7 @@
 	import "codemirror/theme/lesser-dark.css";
 	import "codemirror/mode/vhdl/vhdl";
 
-    export let editor: CodeMirror.EditorFromTextArea;
+    export let editor: CodeMirror.EditorFromTextArea = null;
 
 	let textarea: HTMLTextAreaElement;
 	const config: CodeMirror.EditorConfiguration = {

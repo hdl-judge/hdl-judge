@@ -1,4 +1,4 @@
-import { post } from "./http_requests";
+import { post, get, del } from "./http_requests";
 
 const WAITTIME = 200;
 
@@ -19,7 +19,7 @@ class SubmissionResponse {
 }
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export async function submitTest(items: File[]): Promise<SubmissionResponse> {
@@ -27,27 +27,53 @@ export async function submitTest(items: File[]): Promise<SubmissionResponse> {
 	submission.toplevel_entity = "adder";
     submission.files = items.filter(item => item.filename.endsWith(".vhdl") || item.filename.endsWith(".json"));
 
-	return await (await post("/submit", submission)).json()
+	return await post("/submit", submission)
 }
-
-let exercises = [
-    { id: 1, name: "Somador" },
-    { id: 2, name: "Pipeline - Estágio 1"},
-];
 
 export async function getAllExercises() {
-    await sleep(WAITTIME);
-    return exercises;
+    return await get("/get_values/projects");
 }
 
-export async function createExercise(name: string) {
-    await sleep(WAITTIME);
-    exercises.push({ id: Math.max(...exercises.map(x => x.id))+1, name });
-    return 200;
+export async function createExercise(name: string, userId: number = 0) {
+    let id = await post("/create_project", {
+        name,
+        created_by: userId
+    });
+
+    await post("/create_projects_files", {
+        name: "instrucoes.txt",
+        created_by: userId,
+        project_id: id,
+        default_code: "",
+    });
 }
 
 export async function removeExercise(id: number) {
-    await sleep(WAITTIME);
-    exercises = exercises.filter(x => x.id != id);
-    return 200;
+    await del("/delete_value/projects", {
+       id
+    });
+}
+
+export async function saveProjectFiles(files: File[], projectId: number, userId: number = 0): Promise<void> {
+    for (let file of files) {
+        await post("/create_projects_files", {
+            name: file.filename,
+            created_by: userId,
+            project_id: projectId,
+            default_code: file.content,
+        });
+    }
+}
+
+export async function getFilesFromProject(projectId: number) {
+    let files = await get("/get_values/projects_files");
+    let filteredFiles = files
+        .filter(x => x.project_id == projectId)
+        .map(x => {
+            let file = new File();
+            file.filename = x.name;
+            file.content = x.default_code;
+            return file;
+        });
+    return filteredFiles;
 }

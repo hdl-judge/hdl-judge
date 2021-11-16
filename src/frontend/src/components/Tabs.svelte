@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {createEventDispatcher} from "svelte";
+    import { createEventDispatcher } from "svelte";
 
     export let items = [];
     export let activeTabValue = 0;
@@ -19,63 +19,53 @@
     }
 </script>
 
-<ul>
-    <li>
-        <img alt="deletar" id="delete" on:click={() => dispatch('deleteTab')}  src="icons/x.svg" />
-    </li>
-    {#if Array.isArray(items)}
-        {#each items as item, i}
-            <li class={activeTabValue === i ? 'active' : ''}>
-                <span class="tab" on:click={handleClick(i)} on:dblclick={handleDoubleClick(i)}>
-                    {item.filename}
-                </span>
-            </li>
-        {/each}
-    {/if}
-    <li>
-        <img alt="adicionar" id="add" on:click={() => dispatch('addTab')} src="icons/plus.svg" />
-    </li>
-</ul>
+<section class="tabs">
+    <div class="nav-button" on:click={() => dispatch('deleteTab')}>
+        <img alt="deletar" id="delete" src="icons/x.svg" />
+    </div>
+    {#each items as item, i}
+        <div
+            class={activeTabValue === i ? 'nav-button active' : 'nav-button'}
+            on:click={handleClick(i)}
+            on:dblclick={handleDoubleClick(i)}
+        >
+            {item}
+        </div>
+    {/each}
+    <div class="nav-button" on:click={() => dispatch('addTab')}>
+        <img alt="adicionar" id="add" src="icons/plus.svg" />
+    </div>
+</section>
 
 <style>
-    ul {
+    .tabs {
+        background: #333;
         display: flex;
-        flex-wrap: nowrap;
-        padding-left: 1px;
-        margin: 11px 0 0 0;
-        list-style: none;
-        color: #dee2e6;
+        grid-area: t;
+        color: white;
     }
 
-    .tab {
-        border: 1px solid transparent;
-        border-top-left-radius: 0.25rem;
-        border-top-right-radius: 0.25rem;
-        border-bottom: none;
-        display: block;
-        padding: 0.5rem 1rem;
+    .nav-button {
+        margin: 0 0.3rem 0 0.3rem;
+        padding: 0.5rem;
+        border-radius: 6px 6px 0 0;
+        color: white;
+    }
+
+    .nav-button:hover {
+        background: dimgray;
         cursor: pointer;
     }
 
-    .tab:hover {
-        border-color: #8a8a8a;
+    .active {
+        background: #262626;
     }
 
     #delete {
-        padding: 0.5rem;
-        cursor: pointer;
         filter: invert();
     }
 
-    li.active > .tab {
-        color: #dee2e6;
-        background-color: #262626;
-        border-color: #383d3f;
-    }
-
     #add {
-        padding: 0.5rem 0.2rem;
-        cursor: pointer;
         filter: invert();
     }
 </style>
