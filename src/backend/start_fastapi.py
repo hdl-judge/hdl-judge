@@ -21,7 +21,7 @@ def create_app(is_test: bool = False) -> FastAPI:
     app = FastAPI()
 
     origins = [
-        "http://localhost:5000",
+        "http://localhost:8000",
         "http://0.0.0.0:8000",
         "http://127.0.0.1:8000",
     ]
