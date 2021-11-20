@@ -35,7 +35,7 @@ def create_app(is_test: bool = False) -> FastAPI:
     app.container = container
     app.include_router(http.router)
     app.mount("/", StaticFiles(directory="static", html=True, check_dir=True), name="static")
-    return app, container
+    return app
 
 
-app, container = create_app()
+app = create_app()

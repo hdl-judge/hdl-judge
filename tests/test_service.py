@@ -15,7 +15,7 @@ from src.backend.adapters.secondary.database.SQLAlchemy_client import SQLAlchemy
 from src.backend.dependencies.modules import TestContainer
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def client():
     try:
         database_uri = 'sqlite://'
@@ -28,9 +28,9 @@ def client():
             "INSERT INTO projects (name, created_by) VALUES ('project_1', 1);",
             "INSERT INTO projects (name, created_by) VALUES ('project_2', 2);",
             "INSERT INTO projects (name, created_by) VALUES ('project_3', 3);",
-            "INSERT INTO projects_files (name, project_id, created_by) VALUES ('projectfile_1', 1, 1);",
-            "INSERT INTO projects_files (name, project_id, created_by) VALUES ('projectfile_2', 1, 2);",
-            "INSERT INTO projects_files (name, project_id, created_by) VALUES ('projectfile_3', 1, 3);",
+            "INSERT INTO projects_files (name, project_id, created_by, default_code) VALUES ('projectfile_1', 1, 1, 'CODE');",
+            "INSERT INTO projects_files (name, project_id, created_by, default_code) VALUES ('projectfile_2', 1, 2, 'CODE');",
+            "INSERT INTO projects_files (name, project_id, created_by, default_code) VALUES ('projectfile_3', 1, 3, 'CODE');",
             "INSERT INTO testbench_files (name, projects_files_id, created_by, code) VALUES ('tb_1', 1, 1, 'code_1');",
             "INSERT INTO testbench_files (name, projects_files_id, created_by, code) VALUES ('tb_2', 1, 2, 'code_2');",
             "INSERT INTO testbench_files (name, projects_files_id, created_by, code) VALUES ('tb_3', 1, 3, 'code_3');",
@@ -44,9 +44,9 @@ def client():
 
         os.environ["SERVICE_ENV"] = "test"
 
-        app, container = create_app(True)
+        app = create_app(True)
 
-        container.database_client.override(
+        app.container.database_client.override(
             providers.Factory(
                 SQLAlchemyClient,
                 database_uri=None,
@@ -59,7 +59,6 @@ def client():
 
 
 def test_pudim(client):
-
     response = client.get("/config")
 
     assert response.status_code == 200
@@ -88,7 +87,7 @@ def test_create_project(client):
 
 
 def test_create_projects_files(client):
-    payload = {"name": "project1", "created_by": 1, "project_id": 1}
+    payload = {"name": "project1", "created_by": 1, "project_id": 1, "default_code": "data code"}
 
     response = client.post(
         "/create_projects_files",
