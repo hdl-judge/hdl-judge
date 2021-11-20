@@ -55,13 +55,15 @@ def test_create_projects_files_base(controller, database_client):
     name = "Project file"
     project_id = 13124
     created_by = 13125
+    default_code = "CODE"
     database_client.get_values.return_value = [{
         "id": 125,
         "name": name,
         "project_id": project_id,
-        "created_by": created_by
+        "created_by": created_by,
+        "default_code": default_code
     }]
-    result = controller.create_projects_files(name, project_id, created_by)
+    result = controller.create_projects_files(name, project_id, created_by, database_client)
     expected = 125
     assert result == expected
 
