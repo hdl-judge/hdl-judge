@@ -38,7 +38,8 @@ def client():
             "INSERT INTO submission_files (name, projects_files_id, metadata, code, created_by) VALUES ('sub_2', 2, 'meta_2', 'code_2', 2);",
             "INSERT INTO submission_files (name, projects_files_id, metadata, code, created_by) VALUES ('sub_3', 3, 'meta_3', 'code_3', 3);",
         ]
-        create_tables().create_all(engine)
+        meta = create_tables()
+        meta.create_all(engine)
         for query_text in list_query:
             engine.execute(text(query_text))
 
@@ -55,7 +56,7 @@ def client():
         )
         yield TestClient(app)
     finally:
-        create_tables().drop_all(engine)
+        meta.drop_all(engine)
 
 
 def test_pudim(client):

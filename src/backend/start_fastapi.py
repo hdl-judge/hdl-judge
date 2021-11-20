@@ -8,23 +8,27 @@ from src.backend.adapters.primary import http
 
 def create_app(is_test: bool = False) -> FastAPI:
 
-    if not is_test:
+    if is_test:
         Container = get_container("test")
         container = Container()
         container.wire(modules=[http])
-        container.config.from_yaml('config.yml')
     else:
         Container = get_container()
         container = Container()
         container.wire(modules=[http])
+        container.config.from_yaml('config.yml')
 
     app = FastAPI()
 
     origins = [
         "http://localhost:5000",
-        "http://0.0.0.0:8000",
+        "http://0.0.0.0:5000",
+        "http://127.0.0.1:5000",
     ]
 
+    app.container = container
+    app.include_router(http.router)
+    app.mount("/", StaticFiles(directory="static", html=True, check_dir=True), name="static")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
@@ -32,10 +36,11 @@ def create_app(is_test: bool = False) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
     app.container = container
     app.include_router(http.router)
     app.mount("/", StaticFiles(directory="static", html=True, check_dir=True), name="static")
     return app
-
+  
 
 app = create_app()

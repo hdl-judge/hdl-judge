@@ -19,6 +19,7 @@ class ProjectFilesModel(BaseModel):
     name: str
     created_by: int
     project_id: int
+    default_code: str
 
 
 class TestbenchFiles(BaseModel):

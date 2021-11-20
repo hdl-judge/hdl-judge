@@ -83,19 +83,15 @@ class MainController(BaseController):
         return self.database_client.get_values("projects", "name", name)[0]["id"]
 
     def create_projects_files(
-        self, name: Text, project_id: int, created_by: int
+        self, name: Text, project_id: int, created_by: int, default_code: Text
     ):
         self.database_client.insert_values(
             "projects_files",
             {
                 "name": name,
                 "project_id": project_id,
-<<<<<<< Updated upstream
-                "created_by": created_by
-=======
                 "created_by": created_by,
                 "default_code": default_code
->>>>>>> Stashed changes
             }
         )
         return self.database_client.get_values("projects_files", "name", name)[0]["id"]
@@ -127,12 +123,17 @@ class MainController(BaseController):
                 "code": code
             }
         )
-        return self.database_client.get_values("submission_files", "name", name)["id"] #Corrigir dps
+        return self.database_client.get_values("submission_files", "name", name)[0]["id"] #Corrigir dps
 
     def get_table_all_or_by_id(
         self, table_name: Text, id: int = None
     ) -> Dict[Text, Any]:
         return self.database_client.get_values(table_name, "id", id)
+
+    def delete_record_by_id(
+        self, table_name: Text, id: int
+    ) -> Dict[Text, Any]:
+        return self.database_client.delete_values(table_name, "id", id)
 
     def submit_all_codes_from_one_file_to_plagiarism(
         self, projects_files_id: int

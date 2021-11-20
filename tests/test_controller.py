@@ -40,15 +40,13 @@ def test_create_user_base(controller, database_client):
 def test_create_project_base(controller, database_client):
     name = "Project"
     created_by = 13123
-    due_time = datetime(2021, 12, 30, 15, 10, 25)
     database_client.get_values.return_value = [{
         "id": 124,
         "name": name,
         "created_by": created_by,
-        "due_time": due_time,
         "created_at": datetime.now(),
     }]
-    result = controller.create_project(name, created_by, due_time)
+    result = controller.create_project(name, created_by)
     expected = 124
     assert result == expected
 
