@@ -48,17 +48,17 @@ Container = get_container()
 @router.get('/plagiarism')
 @inject
 async def index(
-    plagiarism_client: PlagiarismDetectorClient = Depends(Provide[Container.plagiarism_client]),
+        plagiarism_client: PlagiarismDetectorClient = Depends(Provide[Container.plagiarism_client]),
 ):
     controller = MainController(logger=Logger, plagiarism_client=plagiarism_client)
     response = controller.submit_codes_to_plagiarism()
     return response
 
-  
+
 @router.get('/config')
 @inject
 async def index(
-    config: str = Depends(Provide[Container.config])
+        config: str = Depends(Provide[Container.config])
 ):
     return config
 
@@ -68,8 +68,8 @@ async def index(
     response_model=SubmissionReturn)
 @inject
 async def submit(
-    submission: Submission,
-    hdl_motor: HDLMotor = Depends(Provide[Container.hdl_motor])
+        submission: Submission,
+        hdl_motor: HDLMotor = Depends(Provide[Container.hdl_motor])
 ):
     response = hdl_motor.get_waveform(submission.toplevel_entity, submission.files)
     return response
@@ -77,22 +77,22 @@ async def submit(
 
 @router.get('/setup')
 @inject
-async def index(
-   database_client: SQLClient = Depends(Provide[Container.database_client]),
+async def setup(
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     request = controller.setup()
     return request
 
 
-#Principal routes
+# Main routes
 
 @router.get('/get_values/{table_name}')
 @inject
 async def get_values(
-    table_name: Text,
-    id: Optional[Text] = None,
-    database_client: SQLClient = Depends(Provide[Container.database_client]),
+        table_name: Text,
+        id: Optional[Text] = None,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     response = controller.get_table_all_or_by_id(table_name, id)
@@ -102,9 +102,9 @@ async def get_values(
 @router.delete('/delete_value/{table_name}')
 @inject
 async def delete_value(
-    table_name: Text,
-    id: int,
-    database_client: SQLClient = Depends(Provide[Container.database_client]),
+        table_name: Text,
+        id: int,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     response = controller.delete_record_by_id(table_name, id)
@@ -114,8 +114,8 @@ async def delete_value(
 @router.post('/create_user')
 @inject
 async def create_user(
-    data: UserModel,
-    database_client: SQLClient = Depends(Provide[Container.database_client]),
+        data: UserModel,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     response = controller.create_user(**data.dict())
@@ -125,8 +125,8 @@ async def create_user(
 @router.post('/create_project')
 @inject
 async def create_project(
-    data: ProjectModel,
-    database_client: SQLClient = Depends(Provide[Container.database_client]),
+        data: ProjectModel,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     response = controller.create_project(**data.dict())
@@ -136,8 +136,8 @@ async def create_project(
 @router.post('/create_projects_files')
 @inject
 async def create_projects_files(
-    data: ProjectFilesModel,
-    database_client: SQLClient = Depends(Provide[Container.database_client]),
+        data: ProjectFilesModel,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     response = controller.create_projects_files(**data.dict())
@@ -147,8 +147,8 @@ async def create_projects_files(
 @router.post('/create_testbench_files')
 @inject
 async def create_testbench_files(
-    data: TestbenchFiles,
-    database_client: SQLClient = Depends(Provide[Container.database_client]),
+        data: TestbenchFiles,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     response = controller.create_testbench_files(**data.dict())
@@ -158,24 +158,22 @@ async def create_testbench_files(
 @router.post('/create_submission_files')
 @inject
 async def create_submission_files(
-    data: SubmissionFiles,
-    database_client: SQLClient = Depends(Provide[Container.database_client]),
+        data: SubmissionFiles,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     response = controller.create_submission_files(**data.dict())
     return response
 
 
-
 @router.get('/submit_all_codes_from_project_to_plagiarism')
 @inject
 async def submit_all_codes_from_project_to_plagiarism(
-    project_id: int,
-    plagiarism_client: PlagiarismDetectorClient = Depends(Provide[Container.plagiarism_client]),
+        project_id: int,
+        plagiarism_client: PlagiarismDetectorClient = Depends(Provide[Container.plagiarism_client]),
 ):
     controller = MainController(logger=Logger, plagiarism_client=plagiarism_client)
     response = controller.submit_all_codes_from_project_to_plagiarism(
         project_id=project_id
     )
     return response
-

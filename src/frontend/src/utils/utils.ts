@@ -13,3 +13,5 @@ export function createAndDownloadFile(inputString: string, filename: string, ext
     link.click();
     document.body.removeChild(link);
 }
+
+export const getStorageKey = id => `project-${id}`;

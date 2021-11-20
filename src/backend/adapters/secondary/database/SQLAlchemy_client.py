@@ -2,9 +2,17 @@ import sqlalchemy as db
 
 from typing import Text, Dict, Any, List
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import inspect, MetaData
+from sqlalchemy import inspect, MetaData, event
+from sqlalchemy.engine import Engine
 
 from src.backend.adapters.secondary.database import SQLClient
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 
 class SQLAlchemyClient(SQLClient):

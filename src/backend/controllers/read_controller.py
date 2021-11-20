@@ -50,6 +50,13 @@ class MainController(BaseController):
         # Database setup
         metadata = create_tables()
         self.database_client.create_table(metadata)
+        self.database_client.insert_values("users", {
+            "name": "admin",
+            "email_address": "admin@admin.com",
+            "academic_id": "000000",
+            "is_professor": True,
+            "is_admin": True
+        })
         return self.database_client.list_tables()
 
     def get_config(self) -> Any:
@@ -80,7 +87,20 @@ class MainController(BaseController):
                 "created_by": created_by
             }
         )
-        return self.database_client.get_values("projects", "name", name)[0]["id"]
+
+        project_id = self.database_client.get_values("projects", "name", name)[0]["id"]
+
+        self.database_client.insert_values(
+            "projects_files",
+            {
+                "name": "instrucoes.txt",
+                "created_by": created_by,
+                "project_id": project_id,
+                "default_code": ""
+            }
+        )
+
+        return project_id
 
     def create_projects_files(
         self, name: Text, project_id: int, created_by: int, default_code: Text

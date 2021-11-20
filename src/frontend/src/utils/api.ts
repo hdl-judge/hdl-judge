@@ -34,17 +34,10 @@ export async function getAllExercises() {
     return await get("/get_values/projects");
 }
 
-export async function createExercise(name: string, userId: number = 0) {
-    let id = await post("/create_project", {
+export async function createExercise(name: string, userId: number = 1) {
+    await post("/create_project", {
         name,
         created_by: userId
-    });
-
-    await post("/create_projects_files", {
-        name: "instrucoes.txt",
-        created_by: userId,
-        project_id: id,
-        default_code: "",
     });
 }
 
@@ -54,7 +47,7 @@ export async function removeExercise(id: number) {
     });
 }
 
-export async function saveProjectFiles(files: File[], projectId: number, userId: number = 0): Promise<void> {
+export async function saveProjectFiles(files: File[], projectId: number, userId: number = 1): Promise<void> {
     for (let file of files) {
         await post("/create_projects_files", {
             name: file.filename,

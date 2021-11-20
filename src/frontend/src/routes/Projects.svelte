@@ -1,5 +1,6 @@
 <script lang="ts">
     import { getAllExercises, createExercise, removeExercise } from '../utils/api';
+    import { getStorageKey } from '../utils/utils';
     import { onMount } from 'svelte';
     import Loading from '../components/Loading.svelte';
     import { link } from 'svelte-spa-router'
@@ -26,6 +27,7 @@
     async function onClickRemoveExercise(id) {
         loading = true;
         await removeExercise(id);
+        localStorage.removeItem(getStorageKey(id));
         await loadExercises();
         loading = false;
     }

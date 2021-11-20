@@ -1,6 +1,6 @@
 <script lang="ts">
     import { submitTest, getFilesFromProject, saveProjectFiles } from "../utils/api";
-    import { createAndDownloadFile } from "../utils/utils";
+    import { createAndDownloadFile, getStorageKey } from "../utils/utils";
     import { ResponseStatus } from "../utils/response_status";
     import Tabs from "../components/Tabs.svelte";
     import TextEditor from "../components/TextEditor.svelte";
@@ -8,11 +8,11 @@
     import { onMount } from "svelte";
 
     export let params: any = {};
+    const storageKey: string = getStorageKey(params.id);
     let editor: CodeMirror.EditorFromTextArea;
     let message: string = "";
     let vcd: string;
     let currentTab: number = 0;
-    let storageKey: string = `project-${params.id}`;
     let tabs: string[] = [];
 
     async function onSubmit(): Promise<void> {
