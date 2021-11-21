@@ -155,6 +155,15 @@ class MainController(BaseController):
     ) -> Dict[Text, Any]:
         return self.database_client.delete_values(table_name, "id", id)
 
+    def get_user_by_email(
+        self, email: str = None
+    ) -> Any:
+        users = self.database_client.get_values("users", "email_address", email)
+        if len(users) >= 1:
+            return users[0]
+        else:
+            return None
+
     def submit_all_codes_from_one_file_to_plagiarism(
         self, projects_files_id: int
     ):

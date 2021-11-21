@@ -1,10 +1,13 @@
 from typing import Any
 from logging import Logger
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from typing import Optional, Text
-from datetime import datetime
+from datetime import datetime, timedelta
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 
 from src.backend.controllers.read_controller import MainController
 from src.backend.adapters.secondary.http import HTTPClient
@@ -19,14 +22,67 @@ from src.backend.dependencies import get_container
 from dependency_injector.wiring import inject, Provide
 
 
+SECRET_KEY = "95858712d6dc172241842aeb4354edf31684236af371f86667a0c74e3c2fa71f"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/token")
+
+
+router = APIRouter()
+Container = get_container()
+
+
 class Response(BaseModel):
     query: str
     limit: int
     gifs: Any
 
 
-router = APIRouter()
-Container = get_container()
+class User(BaseModel):
+    id: int
+    name: Optional[str] = None
+    email_address: Optional[str] = None
+    academic_id: Optional[str] = None
+    is_professor: bool
+    is_admin: bool
+
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+@inject
+async def get_current_user(
+        token: str = Depends(oauth2_scheme),
+        database_client: SQLClient = Depends(Provide[Container.database_client])
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    controller = MainController(logger=Logger, database_client=database_client)
+    user = controller.get_user_by_email(username)
+    if user is None:
+        raise credentials_exception
+    return user
 
 
 # @router.get('/', response_model=Response)
@@ -85,7 +141,35 @@ async def setup(
     return request
 
 
+@router.get("/users/me")
+async def read_users_me(
+        current_user: User = Depends(get_current_user)
+):
+    return current_user
+
+
+@router.post("/token")
+@inject
+async def login_for_access_token(
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        database_client: SQLClient = Depends(Provide[Container.database_client])
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    user = controller.get_user_by_email(form_data.username)
+    if not user or not pwd_context.verify(form_data.password, user["hashed_password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user["email_address"]}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
 # Main routes
+
 
 @router.get('/get_values/{table_name}')
 @inject

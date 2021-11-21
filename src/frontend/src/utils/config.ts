@@ -1,4 +1,4 @@
-const API_URL: string = "http://0.0.0.0:8000";
+const API_URL: string = "ENV_API_URL";
 
 export default {
     API_URL

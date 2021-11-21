@@ -170,14 +170,6 @@
         white-space: pre-line;
     }
 
-    h1 {
-        color: #ff3e00;
-        text-transform: uppercase;
-        font-size: 4em;
-        font-weight: 100;
-        margin: auto 10px;
-    }
-
     button {
         margin: 0 0.3rem 0 0;
         padding: 0.3rem;

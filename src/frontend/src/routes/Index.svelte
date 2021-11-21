@@ -4,15 +4,33 @@
 	import Projects from './Projects.svelte';
 	import Exercise from './Exercise.svelte';
 	import Navbar from '../components/Navbar.svelte';
+    import Login from "./Login.svelte";
+    import { onMount } from "svelte";
+    import { getUserData } from "../utils/api";
 
     const routes = {
         '/': Home,
         '/projects': Projects,
         '/projects/:id': Exercise,
+        '/login': Login,
         '*': Home,
     }
 
-    export let url = "";
+    let isLoggedIn = false;
+    let isAdmin = false;
+    let username = "";
+
+    onMount(async () => {
+        let accessToken = localStorage.getItem("access_token");
+        if (accessToken) {
+            let user = await getUserData();
+            if (user) {
+                isLoggedIn = true;
+                username = user.name;
+                isAdmin = user.is_admin;
+            }
+        }
+    })
 </script>
 
 <main>
@@ -20,12 +38,11 @@
         <h1>HDL Judge</h1>
     </header>
 
-    <Navbar items={[
-        { name: "Home", link: "/" },
-        { name: "Projetos", link: "/projects" },
-        { name: "Alunos", link: "/students" },
-        { name: "Submissões", link: "/submissions" },
-    ]} />
+    <Navbar
+        isLoggedIn={isLoggedIn}
+        isAdmin={isAdmin}
+        username={username}
+    />
 
     <section class="content">
         <Router {routes}/>

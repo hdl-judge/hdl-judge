@@ -13,6 +13,7 @@ def create_tables():
         Column('academic_id', String, unique=True),
         Column('is_professor', Boolean, default=False),
         Column('is_admin', Boolean, default=False),
+        Column('hashed_password', String)
     )
 
     projects = Table(

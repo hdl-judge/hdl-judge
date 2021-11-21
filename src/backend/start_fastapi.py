@@ -25,10 +25,14 @@ def create_app(is_test: bool = False) -> FastAPI:
         "http://0.0.0.0:5000",
         "http://127.0.0.1:5000",
         "http://hdl-judge.brazilsouth.cloudapp.azure.com:8000",
+        "http://localhost:8000",
     ]
 
     app.container = container
-    app.include_router(http.router)
+    app.include_router(
+        http.router,
+        prefix="/api",
+    )
     app.mount("/", StaticFiles(directory="static", html=True, check_dir=True), name="static")
     app.add_middleware(
         CORSMiddleware,
@@ -38,9 +42,6 @@ def create_app(is_test: bool = False) -> FastAPI:
         allow_headers=["*"],
     )
 
-    app.container = container
-    app.include_router(http.router)
-    app.mount("/", StaticFiles(directory="static", html=True, check_dir=True), name="static")
     return app
   
 

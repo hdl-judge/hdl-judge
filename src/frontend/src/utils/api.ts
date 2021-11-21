@@ -1,6 +1,4 @@
-import { post, get, del } from "./http_requests";
-
-const WAITTIME = 200;
+import {post, get, del, postFormData} from "./http_requests";
 
 export class File {
 	filename: string;
@@ -18,8 +16,12 @@ class SubmissionResponse {
     message: string;
 }
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+export async function login(username: string, password: string) {
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("password", password);
+    let result = await postFormData("/token", formData);
+    localStorage.setItem("access_token", result.access_token);
 }
 
 export async function submitTest(items: File[]): Promise<SubmissionResponse> {
@@ -69,4 +71,13 @@ export async function getFilesFromProject(projectId: number) {
             return file;
         });
     return filteredFiles;
+}
+
+export async function getUserData() {
+    try {
+        let result = await get("/users/me");
+        return result;
+    } catch {
+        return false;
+    }
 }
