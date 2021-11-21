@@ -21,7 +21,7 @@ export async function login(username: string, password: string) {
     formData.append("username", username);
     formData.append("password", password);
     let result = await postFormData("/token", formData);
-    localStorage.setItem("access_token", result.access_token);
+    return result;
 }
 
 export async function submitTest(items: File[]): Promise<SubmissionResponse> {

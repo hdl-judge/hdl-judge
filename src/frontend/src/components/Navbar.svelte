@@ -1,60 +1,34 @@
 <script lang="ts">
     import { link } from 'svelte-spa-router'
     import active from 'svelte-spa-router/active'
+    import { userStore } from '../utils/store'
 
-    export let isLoggedIn = false;
-    export let isAdmin = false;
-    export let username = "";
-
-    let items = [
-        { name: "Home", link: "/", showOnlyWhenLoggedIn: false, showOnlyForAdmin: false },
-        { name: "Projetos", link: "/projects", showOnlyWhenLoggedIn: true, showOnlyForAdmin: false },
-        { name: "Alunos", link: "/students", showOnlyWhenLoggedIn: true, showOnlyForAdmin: true },
-        { name: "Submissões", link: "/submissions", showOnlyWhenLoggedIn: true, showOnlyForAdmin: true },
-    ];
+    function logout() {
+        localStorage.removeItem("access_token");
+        $userStore = null;
+    }
 </script>
 
 <nav>
-    {#each items as item (item.name)}
-        {#if item.showOnlyWhenLoggedIn}
-            {#if isLoggedIn}
-                {#if item.showOnlyForAdmin}
-                    {#if isAdmin}
-                        <a href={item.link}
-                            use:link
-                            use:active={{ className: 'active-navbar' }}
-                            class="nav-button"
-                        >
-                            {item.name}
-                        </a>
-                    {/if}
-                {:else}
-                    <a href={item.link}
-                       use:link
-                       use:active={{ className: 'active-navbar' }}
-                       class="nav-button"
-                    >
-                        {item.name}
-                    </a>
-                {/if}
-            {/if}
-        {:else}
-            <a href={item.link}
-               use:link
-               use:active={{ className: 'active-navbar' }}
-               class="nav-button"
-            >
-                {item.name}
-            </a>
-        {/if}
-    {/each}
-    {#if isLoggedIn && username}
-        <div class="last-child">
-            {username}
-        </div>
+    <a href="/" use:link use:active={{ className: 'active-navbar' }} class="nav-button">Home</a>
+
+    {#if $userStore}
+        <a href="/projects" use:link use:active={{ className: 'active-navbar' }} class="nav-button">Projetos</a>
+    {/if}
+
+    {#if $userStore && $userStore.is_admin}
+        <a href="/users" use:link use:active={{ className: 'active-navbar' }} class="nav-button">Usuários</a>
+    {/if}
+
+    {#if $userStore && $userStore.is_admin}
+        <a href="/submissions" use:link use:active={{ className: 'active-navbar' }} class="nav-button">Submissões</a>
+    {/if}
+
+    {#if $userStore}
+        <div class="last-child">{$userStore.name}</div>
+        <div class="nav-button" on:click={logout}>Logout</div>
     {:else}
-        <a href="/login" use:link use:active={{ className: 'active-navbar' }}
-           class="nav-button last-child">Login</a>
+        <a href="/login" use:link use:active={{ className: 'active-navbar' }} class="nav-button last-child">Login</a>
     {/if}
 </nav>
 

@@ -1,7 +1,6 @@
 <script lang="ts">
     import { submitTest, getFilesFromProject, saveProjectFiles } from "../utils/api";
     import { createAndDownloadFile, getStorageKey } from "../utils/utils";
-    import { ResponseStatus } from "../utils/response_status";
     import Tabs from "../components/Tabs.svelte";
     import TextEditor from "../components/TextEditor.svelte";
     import CodeMirror from "codemirror";
@@ -20,9 +19,9 @@
 
         let response = await submitTest(storedTabItems);
 
-        message = response.status == ResponseStatus.OK
-                ? "Código simulado com sucesso.\n"
-                : "Erro ao compilar ou simular o código:\n";
+        // message = response.status == ResponseStatus.OK
+        //         ? "Código simulado com sucesso.\n"
+        //         : "Erro ao compilar ou simular o código:\n";
         message += response.message;
         vcd = response.result;
     }

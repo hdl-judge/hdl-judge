@@ -7,6 +7,7 @@
     import Login from "./Login.svelte";
     import { onMount } from "svelte";
     import { getUserData } from "../utils/api";
+    import { userStore } from "../utils/store";
 
     const routes = {
         '/': Home,
@@ -16,18 +17,12 @@
         '*': Home,
     }
 
-    let isLoggedIn = false;
-    let isAdmin = false;
-    let username = "";
-
     onMount(async () => {
         let accessToken = localStorage.getItem("access_token");
         if (accessToken) {
             let user = await getUserData();
             if (user) {
-                isLoggedIn = true;
-                username = user.name;
-                isAdmin = user.is_admin;
+                $userStore = user
             }
         }
     })
@@ -38,11 +33,7 @@
         <h1>HDL Judge</h1>
     </header>
 
-    <Navbar
-        isLoggedIn={isLoggedIn}
-        isAdmin={isAdmin}
-        username={username}
-    />
+    <Navbar />
 
     <section class="content">
         <Router {routes}/>

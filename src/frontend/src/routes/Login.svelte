@@ -1,13 +1,14 @@
 <script>
-    import { login } from "../utils/api";
+    import {getUserData, login} from "../utils/api";
     import Loading from "../components/Loading.svelte";
     import { push } from "svelte-spa-router";
+    import { userStore } from "../utils/store";
 
     let email = "";
     let password = "";
     let loading = false;
 
-    function onSubmit() {
+    async function onSubmit() {
         if (!email) {
             alert("É necessário preencher o email");
             return;
@@ -17,9 +18,11 @@
             return;
         }
         loading = true;
-        login(email, password);
+        let response = await login(email, password);
+        localStorage.setItem("access_token", response.access_token);
+        $userStore = await getUserData();
         loading = false;
-        push('/')
+        await push("/");
     }
 </script>
 

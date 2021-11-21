@@ -10,7 +10,6 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from src.backend.controllers.read_controller import MainController
-from src.backend.adapters.secondary.http import HTTPClient
 from src.backend.adapters.secondary.database import SQLClient
 from src.backend.adapters.secondary.plagiarism_detector import PlagiarismDetectorClient
 from src.backend.adapters.secondary.hdl_motor import HDLMotor
@@ -20,11 +19,6 @@ from src.backend.schema.request import UserModel, ProjectModel, ProjectFilesMode
 
 from src.backend.dependencies import get_container
 from dependency_injector.wiring import inject, Provide
-
-
-SECRET_KEY = "95858712d6dc172241842aeb4354edf31684236af371f86667a0c74e3c2fa71f"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -50,21 +44,26 @@ class User(BaseModel):
     is_admin: bool
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(
+        data: dict,
+        expires_delta: Optional[timedelta] = None,
+        config: str = Depends(Provide[Container.config])
+):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
     return encoded_jwt
 
 
 @inject
 async def get_current_user(
         token: str = Depends(oauth2_scheme),
-        database_client: SQLClient = Depends(Provide[Container.database_client])
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
+        config: str = Depends(Provide[Container.config])
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -72,7 +71,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -152,7 +151,8 @@ async def read_users_me(
 @inject
 async def login_for_access_token(
         form_data: OAuth2PasswordRequestForm = Depends(),
-        database_client: SQLClient = Depends(Provide[Container.database_client])
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
+        config: str = Depends(Provide[Container.config])
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     user = controller.get_user_by_email(form_data.username)
@@ -162,7 +162,7 @@ async def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user["email_address"]}, expires_delta=access_token_expires
     )
