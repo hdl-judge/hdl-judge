@@ -150,6 +150,11 @@ class MainController(BaseController):
     ) -> Dict[Text, Any]:
         return self.database_client.get_values(table_name, "id", id)
 
+    def update_record_by_id(
+        self, table_name: Text, new_values: Dict[Any. Any], id: int = None
+    ) -> Dict[Text, Any]:
+        return self.database_client.update_values(table_name, new_values, "id", id)
+
     def delete_record_by_id(
         self, table_name: Text, id: int
     ) -> Dict[Text, Any]:

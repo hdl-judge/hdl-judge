@@ -8,6 +8,7 @@ from typing import Optional, Text
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from typing import Dict
 
 from src.backend.controllers.read_controller import MainController
 from src.backend.adapters.secondary.database import SQLClient
@@ -180,6 +181,19 @@ async def get_values(
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     response = controller.get_table_all_or_by_id(table_name, id)
+    return response
+
+
+@router.put('/update_value/{table_name}')
+@inject
+async def delete_value(
+        table_name: Text,
+        id: int,
+        data: Dict[str, float],
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.update_record_by_id(table_name, data, id)
     return response
 
 
