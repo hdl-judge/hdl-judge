@@ -24,10 +24,14 @@ export async function login(username: string, password: string) {
     return result;
 }
 
-export async function submitTest(items: File[]): Promise<SubmissionResponse> {
+export async function submitTest(items: File[], toplevelEntity: string): Promise<SubmissionResponse> {
 	let submission = new Submission();
-	submission.toplevel_entity = "adder";
-    submission.files = items.filter(item => item.filename.endsWith(".vhdl") || item.filename.endsWith(".json"));
+	submission.toplevel_entity = toplevelEntity;
+    submission.files = items.filter(item =>
+        item.filename.endsWith(".vhdl") ||
+        item.filename.endsWith(".vhd") ||
+        item.filename.endsWith(".json")
+    );
 
 	return await post("/submit", submission)
 }

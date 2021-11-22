@@ -41,14 +41,14 @@
         <table>
             <tr>
                 <th>Nome do projeto</th>
-                {#if $userStore.is_admin}
+                {#if $userStore && $userStore.is_admin}
                     <th class="clickable" on:click={onClickAddExercise}><img alt="adicionar" class="icon" src="icons/plus.svg" /></th>
                 {/if}
             </tr>
             {#each exercises as exercise (exercise.id)}
                 <tr>
                     <td><a href="/projects/{exercise.id}" use:link class="nav-button">{exercise.name}</a></td>
-                    {#if $userStore.is_admin}
+                    {#if $userStore && $userStore.is_admin}
                         <td class="clickable" on:click={() => onClickRemoveExercise(exercise.id)}><img alt="remover" class="icon" src="icons/x.svg" /></td>
                     {/if}
                 </tr>

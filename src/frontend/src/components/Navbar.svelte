@@ -21,10 +21,6 @@
         <a href="/users" use:link use:active={{ className: 'active-navbar' }} class="nav-button">Usuários</a>
     {/if}
 
-    {#if $userStore && $userStore.is_admin}
-        <a href="/submissions" use:link use:active={{ className: 'active-navbar' }} class="nav-button">Submissões</a>
-    {/if}
-
     {#if $userStore}
         <div class="last-child">{$userStore.name}</div>
         <div class="nav-button" on:click={logout}>Logout</div>
