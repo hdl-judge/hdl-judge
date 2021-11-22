@@ -29,7 +29,7 @@
             on:click={handleClick(i)}
             on:dblclick={handleDoubleClick(i)}
         >
-            {item}
+            {item.filename}
         </div>
     {/each}
     <div class="nav-button" on:click={() => dispatch('addTab')}>

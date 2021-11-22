@@ -48,7 +48,7 @@ class User(BaseModel):
 def create_access_token(
         data: dict,
         expires_delta: Optional[timedelta] = None,
-        config: str = Depends(Provide[Container.config])
+        config: dict = Depends(Provide[Container.config])
 ):
     to_encode = data.copy()
     if expires_delta:
@@ -56,7 +56,7 @@ def create_access_token(
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, config["SECRET_KEY"], algorithm=config["ALGORITHM"])
     return encoded_jwt
 
 
@@ -64,7 +64,7 @@ def create_access_token(
 async def get_current_user(
         token: str = Depends(oauth2_scheme),
         database_client: SQLClient = Depends(Provide[Container.database_client]),
-        config: str = Depends(Provide[Container.config])
+        config: dict = Depends(Provide[Container.config])
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -72,7 +72,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        payload = jwt.decode(token, config["SECRET_KEY"], algorithms=[config["ALGORITHM"]])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -114,7 +114,7 @@ async def index(
 @router.get('/config')
 @inject
 async def index(
-        config: str = Depends(Provide[Container.config])
+        config: dict = Depends(Provide[Container.config])
 ):
     return config
 
@@ -153,7 +153,7 @@ async def read_users_me(
 async def login_for_access_token(
         form_data: OAuth2PasswordRequestForm = Depends(),
         database_client: SQLClient = Depends(Provide[Container.database_client]),
-        config: str = Depends(Provide[Container.config])
+        config: dict = Depends(Provide[Container.config])
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     user = controller.get_user_by_email(form_data.username)
@@ -163,7 +163,7 @@ async def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=config["ACCESS_TOKEN_EXPIRE_MINUTES"])
     access_token = create_access_token(
         data={"sub": user["email_address"]}, expires_delta=access_token_expires
     )
@@ -216,7 +216,8 @@ async def create_user(
         database_client: SQLClient = Depends(Provide[Container.database_client]),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
-    response = controller.create_user(**data.dict())
+    hashed_password = pwd_context.hash(data.academic_id)
+    response = controller.create_user(hashed_password=hashed_password, **data.dict())
     return response
 
 
@@ -236,9 +237,10 @@ async def create_project(
 async def create_projects_files(
         data: ProjectFilesModel,
         database_client: SQLClient = Depends(Provide[Container.database_client]),
+        current_user: dict = Depends(get_current_user)
 ):
     controller = MainController(logger=Logger, database_client=database_client)
-    response = controller.create_projects_files(**data.dict())
+    response = controller.create_projects_files(**data.dict(), created_by=current_user["id"])
     return response
 
 
@@ -258,9 +260,10 @@ async def create_testbench_files(
 async def create_submission_files(
         data: SubmissionFiles,
         database_client: SQLClient = Depends(Provide[Container.database_client]),
+        current_user: dict = Depends(get_current_user)
 ):
     controller = MainController(logger=Logger, database_client=database_client)
-    response = controller.create_submission_files(**data.dict())
+    response = controller.create_submission_files(**data.dict(), created_by=current_user["id"])
     return response
 
 

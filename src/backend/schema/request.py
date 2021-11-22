@@ -17,7 +17,6 @@ class ProjectModel(BaseModel):
 
 class ProjectFilesModel(BaseModel):
     name: str
-    created_by: int
     project_id: int
     default_code: str
 
@@ -31,7 +30,6 @@ class TestbenchFiles(BaseModel):
 
 class SubmissionFiles(BaseModel):
     name: str
-    created_by: int
-    projects_files_id: int
+    project_id: int
     metadata: str
     code: str

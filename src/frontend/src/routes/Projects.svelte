@@ -1,9 +1,10 @@
 <script lang="ts">
-    import { getAllExercises, createExercise, removeExercise } from '../utils/api';
+    import { getAllExercises, createExercise, removeExercise } from '../utils/api/api';
     import { getStorageKey } from '../utils/utils';
     import { onMount } from 'svelte';
     import Loading from '../components/Loading.svelte';
     import { link } from 'svelte-spa-router'
+    import {userStore} from "../utils/store";
 
     let exercises = [];
     let loading = true;
@@ -27,7 +28,7 @@
     async function onClickRemoveExercise(id) {
         loading = true;
         await removeExercise(id);
-        localStorage.removeItem(getStorageKey(id));
+        localStorage.removeItem(getStorageKey(id, $userStore.email_address));
         await loadExercises();
         loading = false;
     }
@@ -40,12 +41,16 @@
         <table>
             <tr>
                 <th>Nome do projeto</th>
-                <th class="clickable" on:click={onClickAddExercise}><img alt="adicionar" class="icon" src="icons/plus.svg" /></th>
+                {#if $userStore.is_admin}
+                    <th class="clickable" on:click={onClickAddExercise}><img alt="adicionar" class="icon" src="icons/plus.svg" /></th>
+                {/if}
             </tr>
             {#each exercises as exercise (exercise.id)}
                 <tr>
                     <td><a href="/projects/{exercise.id}" use:link class="nav-button">{exercise.name}</a></td>
-                    <td class="clickable" on:click={() => onClickRemoveExercise(exercise.id)}><img alt="remover" class="icon" src="icons/x.svg" /></td>
+                    {#if $userStore.is_admin}
+                        <td class="clickable" on:click={() => onClickRemoveExercise(exercise.id)}><img alt="remover" class="icon" src="icons/x.svg" /></td>
+                    {/if}
                 </tr>
             {/each}
         </table>

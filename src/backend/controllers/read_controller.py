@@ -55,7 +55,8 @@ class MainController(BaseController):
             "email_address": "admin@admin.com",
             "academic_id": "000000",
             "is_professor": True,
-            "is_admin": True
+            "is_admin": True,
+            "hashed_password": "$2b$12$gHm4iwnd.8a0kalxR6ahbOejV6AeoaCgDxdOkIWdxK0HzppHQnRii"
         })
         return self.database_client.list_tables()
 
@@ -63,7 +64,7 @@ class MainController(BaseController):
         return True
 
     def create_user(
-        self, name: Text, email_address: Text, academic_id: Text, is_professor: bool, is_admin: bool
+        self, hashed_password: Text, name: Text, email_address: Text, academic_id: Text, is_professor: bool, is_admin: bool
     ) -> int:
         self.database_client.insert_values(
             "users",
@@ -72,7 +73,8 @@ class MainController(BaseController):
                 "email_address": email_address,
                 "academic_id": academic_id,
                 "is_professor": is_professor,
-                "is_admin": is_admin
+                "is_admin": is_admin,
+                "hashed_password": hashed_password
             }
         )
         return self.database_client.get_values("users", "email_address", email_address)[0]["id"]
@@ -131,13 +133,13 @@ class MainController(BaseController):
         return self.database_client.get_values("testbench_files", "name", name)[0]["id"]
 
     def create_submission_files(
-        self, name: Text, projects_files_id: int, metadata: Text, created_by: int, code: Text
+        self, name: Text, project_id: int, metadata: Text, created_by: int, code: Text
     ):
         self.database_client.insert_values(
             "submission_files",
             {
                 "name": name,
-                "projects_files_id": projects_files_id,
+                "project_id": project_id,
                 "metadata": metadata,
                 "created_by": created_by,
                 "code": code
@@ -151,7 +153,7 @@ class MainController(BaseController):
         return self.database_client.get_values(table_name, "id", id)
 
     def update_record_by_id(
-        self, table_name: Text, new_values: Dict[Any. Any], id: int = None
+        self, table_name: Text, new_values: Dict[Any, Any],id: int = None
     ) -> Dict[Text, Any]:
         return self.database_client.update_values(table_name, new_values, "id", id)
 

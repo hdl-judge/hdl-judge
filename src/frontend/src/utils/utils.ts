@@ -14,4 +14,4 @@ export function createAndDownloadFile(inputString: string, filename: string, ext
     document.body.removeChild(link);
 }
 
-export const getStorageKey = id => `project-${id}`;
+export const getStorageKey = (id: number, user: string) => `project-${id}-user`;

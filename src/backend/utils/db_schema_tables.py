@@ -49,7 +49,7 @@ def create_tables():
         'submission_files', meta,
         Column('id', Integer, primary_key=True),
         Column('name', String),
-        Column('projects_files_id', Integer, ForeignKey("projects_files.id")),
+        Column('project_id', Integer, ForeignKey("projects.id", onupdate="CASCADE", ondelete="CASCADE")),
         Column('metadata', String),
         Column('code', String),
         Column('created_at', DateTime, server_default=func.now()),

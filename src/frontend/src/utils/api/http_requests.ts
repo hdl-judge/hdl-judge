@@ -1,10 +1,11 @@
-import config from "./config";
+import config from "../config";
 
 export async function post(route:string, body: object): Promise<any> {
     let response = await fetch(`${config.API_URL}${route}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("access_token"),
         },
         body: JSON.stringify(body)
     });

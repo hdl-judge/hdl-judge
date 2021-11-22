@@ -6,14 +6,18 @@
 	import Navbar from '../components/Navbar.svelte';
     import Login from "./Login.svelte";
     import { onMount } from "svelte";
-    import { getUserData } from "../utils/api";
+    import { getUserData } from "../utils/api/api";
     import { userStore } from "../utils/store";
+    import Users from "./users/Users.svelte";
+    import UserForm from "./users/UserForm.svelte";
 
     const routes = {
         '/': Home,
         '/projects': Projects,
         '/projects/:id': Exercise,
         '/login': Login,
+        '/users': Users,
+        '/users/new': UserForm,
         '*': Home,
     }
 
@@ -21,7 +25,7 @@
         let accessToken = localStorage.getItem("access_token");
         if (accessToken) {
             let user = await getUserData();
-            if (user) {
+            if (user && user.name) {
                 $userStore = user
             }
         }

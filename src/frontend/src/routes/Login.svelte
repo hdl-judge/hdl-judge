@@ -1,5 +1,5 @@
 <script>
-    import {getUserData, login} from "../utils/api";
+    import {getUserData, login} from "../utils/api/api";
     import Loading from "../components/Loading.svelte";
     import { push } from "svelte-spa-router";
     import { userStore } from "../utils/store";
@@ -19,6 +19,11 @@
         }
         loading = true;
         let response = await login(email, password);
+        if (response.detail) {
+            loading = false;
+            alert(response.detail);
+            return;
+        }
         localStorage.setItem("access_token", response.access_token);
         $userStore = await getUserData();
         loading = false;

@@ -53,7 +53,6 @@ export async function saveProjectFiles(files: File[], projectId: number, userId:
     for (let file of files) {
         await post("/create_projects_files", {
             name: file.filename,
-            created_by: userId,
             project_id: projectId,
             default_code: file.content,
         });
@@ -64,13 +63,18 @@ export async function getFilesFromProject(projectId: number) {
     let files = await get("/get_values/projects_files");
     let filteredFiles = files
         .filter(x => x.project_id == projectId)
-        .map(x => {
-            let file = new File();
-            file.filename = x.name;
-            file.content = x.default_code;
-            return file;
-        });
+        .map(x => ({
+            filename: x.name,
+            content: x.default_code,
+            id: x.id,
+        }));
     return filteredFiles;
+}
+
+export async function removeProjectFile(id: number) {
+    await del("/delete_value/projects_files", {
+       id
+    });
 }
 
 export async function getUserData() {

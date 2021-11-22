@@ -1,11 +1,12 @@
 <script lang="ts">
-    import { link } from 'svelte-spa-router'
+    import {link, push} from 'svelte-spa-router'
     import active from 'svelte-spa-router/active'
     import { userStore } from '../utils/store'
 
     function logout() {
         localStorage.removeItem("access_token");
         $userStore = null;
+        push("/");
     }
 </script>
 

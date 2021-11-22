@@ -1,58 +1,73 @@
 <script lang="ts">
-    import { submitTest, getFilesFromProject, saveProjectFiles } from "../utils/api";
+    import {submitTest, getFilesFromProject, saveProjectFiles, removeProjectFile} from "../utils/api/api";
     import { createAndDownloadFile, getStorageKey } from "../utils/utils";
     import Tabs from "../components/Tabs.svelte";
     import TextEditor from "../components/TextEditor.svelte";
     import CodeMirror from "codemirror";
     import { onMount } from "svelte";
+    import {userStore} from "../utils/store";
+    import Loading from "../components/Loading.svelte";
+    import {getSubmissonFiles, removeSubmissionFile, saveSubmissionFiles} from "../utils/api/submissions";
 
     export let params: any = {};
-    const storageKey: string = getStorageKey(params.id);
     let editor: CodeMirror.EditorFromTextArea;
     let message: string = "";
     let vcd: string;
     let currentTab: number = 0;
-    let tabs: string[] = [];
+    let tabItems = [];
+    let loading = false;
 
-    async function onSubmit(): Promise<void> {
-        let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
+    onMount(async () => {
+        editor.on("change", onChangeContent);
 
-        let response = await submitTest(storedTabItems);
+        if (!$userStore)
+            return;
 
-        // message = response.status == ResponseStatus.OK
-        //         ? "Código simulado com sucesso.\n"
-        //         : "Erro ao compilar ou simular o código:\n";
+        if ($userStore.is_admin) {
+            tabItems = await getFilesFromProject(params.id);
+        } else {
+            tabItems = await getSubmissonFiles(params.id, $userStore.id);
+            if (!tabItems.length > 0)
+                tabItems = await getFilesFromProject(params.id);
+        }
+        if (tabItems.length > 0)
+            editor.setValue(tabItems[currentTab].content);
+    });
+
+    async function onRunFiles(): Promise<void> {
+        await onSaveFiles();
+        loading = true;
+        let response = await submitTest(tabItems);
+        loading = false;
+
+        message = response.status == "OK"
+                ? "Código simulado com sucesso.\n"
+                : "Erro ao compilar ou simular o código:\n";
         message += response.message;
         vcd = response.result;
     }
 
     async function onSaveFiles(): Promise<void> {
-        let storageKey = `project-${params.id}`;
-        let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
-
-        await saveProjectFiles(storedTabItems, params.id);
-
+        loading = true;
+        if (tabItems.length > 0) {
+            let ids = tabItems.map(x => x.id);
+            for (let id of ids) {
+                if (id) {
+                    $userStore.is_admin
+                        ? await removeProjectFile(id)
+                        : await removeSubmissionFile(id);
+                }
+            }
+        }
+        let response = $userStore.is_admin
+            ? await saveProjectFiles(tabItems, params.id)
+            : await saveSubmissionFiles(tabItems, params.id);
+        loading = false;
         message = "Arquivos salvos.\n";
     }
 
-    onMount(async () => {
-        let stored = localStorage.getItem(storageKey);
-        if (!stored) {
-            let tabItems = await getFilesFromProject(params.id);
-            stored = JSON.stringify(tabItems);
-            localStorage.setItem(storageKey, stored);
-        }
-        let storedTabItems = JSON.parse(stored);
-        tabs = storedTabItems.map(x => x.filename);
-        editor.setValue(storedTabItems[currentTab].content);
-        editor.on("change", onChangeContent);
-    });
-
     function onChangeContent() {
-        let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
-
-        storedTabItems[currentTab].content = editor.getValue();
-        localStorage.setItem(storageKey, JSON.stringify(storedTabItems));
+        tabItems[currentTab].content = editor.getValue();
     }
 
     function onChangeTab(event) {
@@ -60,48 +75,43 @@
     }
 
     function changeTab(newTabIndex) {
-        let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
         currentTab = newTabIndex;
-        editor.setValue(storedTabItems[newTabIndex].content);
+        editor.setValue(tabItems[newTabIndex].content);
     }
 
     function addTab() {
         let newFilename = "nova_aba";
 
-        let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
-        storedTabItems.push({
+        tabItems.push({
             filename: newFilename,
             content: "",
         });
-        localStorage.setItem(storageKey, JSON.stringify(storedTabItems));
-
-        tabs.push(newFilename);
-        changeTab(tabs.length-1);
+        tabItems = tabItems;
+        changeTab(tabItems.length-1);
     }
 
     function renameTab(event) {
-        let newName = prompt("Digite o nome do arquivo", tabs[event.detail]);
+        let newName = prompt("Digite o nome do arquivo", tabItems[event.detail].filename);
         if (newName) {
-            let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
-            storedTabItems[event.detail].filename = newName;
-            localStorage.setItem(storageKey, JSON.stringify(storedTabItems));
-
-            tabs[event.detail] = newName;
+            tabItems[event.detail].filename = newName;
         }
     }
 
-    function deleteTab() {
-        let confirmDeleteTab = confirm(`Deseja apagar a aba ${tabs[currentTab]}?`);
+    async function deleteTab() {
+        let confirmDeleteTab = confirm(`Deseja apagar a aba ${tabItems[currentTab].filename}?`);
         if (confirmDeleteTab) {
-            let storedTabItems = JSON.parse(localStorage.getItem(storageKey));
-            storedTabItems.splice(currentTab, 1);
-            localStorage.setItem(storageKey, JSON.stringify(storedTabItems));
-
-            tabs.splice(currentTab, 1);
-            let newTabIndex = currentTab > tabs.length-1 ? tabs.length-1 : currentTab;
+            loading = true;
+            if (tabItems.length > 0) {
+                $userStore.is_admin
+                    ? await removeProjectFile(tabItems[currentTab].id)
+                    : await removeSubmissionFile(tabItems[currentTab].id);
+            }
+            loading = false;
+            tabItems.splice(currentTab, 1);
+            let newTabIndex = currentTab > tabItems.length-1 ? tabItems.length-1 : currentTab;
             currentTab = newTabIndex;
-            editor.setValue(storedTabItems[newTabIndex].content);
-            tabs = tabs;
+            editor.setValue(tabItems[newTabIndex].content);
+            tabItems = tabItems;
         }
     }
 </script>
@@ -109,7 +119,7 @@
 <section class="panel">
     <Tabs
         activeTabValue={currentTab}
-        items={tabs}
+        items={tabItems}
         on:changeTab={onChangeTab}
         on:addTab={addTab}
         on:renameTab={renameTab}
@@ -124,6 +134,7 @@
                 </button>
             {/if}
             <button on:click={onSaveFiles}>Salvar</button>
+            <button on:click={onRunFiles}>Rodar</button>
         </div>
     </nav>
 
@@ -132,7 +143,11 @@
     </section>
 
     <aside class="results">
-        {message}
+        {#if loading}
+            <Loading />
+        {:else}
+            {message}
+        {/if}
     </aside>
 </section>
 
