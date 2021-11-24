@@ -267,6 +267,19 @@ async def create_submission_files(
     return response
 
 
+@router.get('/get_files_to_student')
+@inject
+async def get_student_files(
+        project_id: int,
+        user_id: int,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
+        current_user: dict = Depends(get_current_user)
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.get_files_to_student(project_id=project_id, user_id=user_id)
+    return response
+
+
 @router.get('/submit_all_codes_from_project_to_plagiarism')
 @inject
 async def submit_all_codes_from_project_to_plagiarism(
