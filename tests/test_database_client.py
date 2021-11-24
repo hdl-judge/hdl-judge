@@ -15,9 +15,9 @@ def setup_database():
     engine = create_engine(database_uri)
 
     list_query = [
-        "INSERT INTO users (name, email_address, academic_id, is_professor, is_admin) VALUES ('p1', 'e1@test.com', 'ABC_1', True, True);",
-        "INSERT INTO users (name, email_address, academic_id, is_professor, is_admin) VALUES ('p2', 'e2@test.com', 'ABC_2', False, False);",
-        "INSERT INTO users (name, email_address, academic_id, is_professor, is_admin) VALUES ('p3', 'e3@test.com', 'ABC_3', False, False);",
+        "INSERT INTO users (name, email_address, academic_id, is_professor, is_admin, hashed_password) VALUES ('p1', 'e1@test.com', 'ABC_1', True, True, 'TESTE1');",
+        "INSERT INTO users (name, email_address, academic_id, is_professor, is_admin, hashed_password) VALUES ('p2', 'e2@test.com', 'ABC_2', False, False, 'TESTE2');",
+        "INSERT INTO users (name, email_address, academic_id, is_professor, is_admin, hashed_password) VALUES ('p3', 'e3@test.com', 'ABC_3', False, False, 'TESTE3');",
     ]
     create_tables().create_all(engine)
     for query_text in list_query:
@@ -34,15 +34,17 @@ def test_insert_values_base(setup_database):
     academic_id = "ACD123"
     is_professor = True
     is_admin = False
+    hashed_password = "TESTE"
     values = {
         "name": name,
         "email_address": email_address,
         "academic_id": academic_id,
         "is_professor": is_professor,
-        "is_admin": is_admin
+        "is_admin": is_admin,
+        "hashed_password": hashed_password
     }
     client.insert_values("users", values)
-    expected = [(4, name, email_address, academic_id, is_professor, is_admin)]
+    expected = [(4, name, email_address, academic_id, is_professor, is_admin, hashed_password)]
     result = engine.execute(text(f"SELECT * FROM users WHERE name='{name}'"))
     assert list(result) == expected
 
@@ -51,7 +53,7 @@ def test_delete_values_base(setup_database):
     client, engine = setup_database
     result_b = engine.execute(text(f"SELECT * FROM users WHERE id=1"))
     client.delete_values("users", "id", 1)
-    expected = [(1, 'p1', 'e1@test.com', 'ABC_1', True, True)]
+    expected = [(1, 'p1', 'e1@test.com', 'ABC_1', True, True, 'TESTE1')]
     result_a = engine.execute(text(f"SELECT * FROM users WHERE id=1"))
     assert list(result_b) == expected
     assert list(result_a) == []
@@ -59,10 +61,10 @@ def test_delete_values_base(setup_database):
 
 def test_update_values_base(setup_database):
     client, engine = setup_database
-    expected_b = [(1, 'p1', 'e1@test.com', 'ABC_1', True, True)]
+    expected_b = [(1, 'p1', 'e1@test.com', 'ABC_1', True, True, 'TESTE1')]
     result_b = engine.execute(text(f"SELECT * FROM users WHERE id=1"))
     client.update_values("users", {"name": "p_change"}, "id", 1)
-    expected_a = [(1, 'p_change', 'e1@test.com', 'ABC_1', True, True)]
+    expected_a = [(1, 'p_change', 'e1@test.com', 'ABC_1', True, True, 'TESTE1')]
     result_a = engine.execute(text(f"SELECT * FROM users WHERE id=1"))
     assert list(result_b) == expected_b
     assert list(result_a) == expected_a

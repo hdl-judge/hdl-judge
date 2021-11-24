@@ -24,15 +24,17 @@ def test_create_user_base(controller, database_client):
     academic_id = "ACD123"
     is_professor = True
     is_admin = False
+    hashed_password = "TEST1"
     database_client.get_values.return_value = [{
         "id": 123,
         "name": name,
         "email_address": email_address,
         "academic_id": academic_id,
         "is_professor": is_professor,
-        "is_admin": is_admin
+        "is_admin": is_admin,
+        "hashed_password": hashed_password
     }]
-    result = controller.create_user(name, email_address, academic_id, is_professor, is_admin)
+    result = controller.create_user(hashed_password, name, email_address, academic_id, is_professor, is_admin)
     expected = 123
     assert result == expected
 
