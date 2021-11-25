@@ -4,7 +4,7 @@ from logging import Logger
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
-from typing import Optional, Text
+from typing import Optional, Text, List
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -283,7 +283,7 @@ async def get_student_files(
 @inject
 async def get_student_files(
         project_id: int,
-        files: [SubmissionFiles],
+        files: List[SubmissionFiles],
         database_client: SQLClient = Depends(Provide[Container.database_client]),
         current_user: dict = Depends(get_current_user)
 ):
