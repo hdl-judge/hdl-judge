@@ -197,31 +197,29 @@ class MainController(BaseController):
 
         return files_to_return
 
-    def get_files_to_student(self, project_id: int, user_id: int) -> List[Dict[Text, Any]]:
-        files_to_return = []
-        projects_files = self.database_client.get_multiple_where_values("projects_files", {"project_id": project_id})
-        projects_files_ids = [record["id"] for record in projects_files]
+    def save_submission_files(self, project_id: int, user_id: int, files: List[Dict[Text, Any]]) -> List[Dict[Text, Any]]:
 
         user_submission_files = self.database_client.get_multiple_where_values("submission_files", {"created_by": user_id})
-        user_submission_files_project_ids = [record["project_id"] for record in user_submission_files]
+        user_submission_files_hash = [f'{record["name"]}_{project_id}' if record["project_id"] == project_id else None
+                                      for record in user_submission_files]
 
-        for record in user_submission_files:
-            if record["project_id"] in projects_files_ids:
-                files_to_return.append(record)
-
-        for record in projects_files:
-            if record["id"] not in user_submission_files_project_ids:
-                files_to_return.append({
-                    "id": None,
-                    "project_id": record["id"],
-                    "name": record["name"],
-                    "code": record["default_code"],
-                    "metadata": "",
-                    "created_at": record["created_at"],
-                    "created_by": record["created_by"]
-                })
-
-        return files_to_return
+        for file in files:
+            if f'{file["name"]}_{file["project_id"]}' in user_submission_files_hash:
+                self.database_client.update_multiple_where_values(
+                    "submission_files", file,
+                    {"project_id": file["project_id"], "name": file["name"], "created_by": user_id}
+                )
+            else:
+                self.database_client.insert_values(
+                    "submission_files",
+                    {
+                        "name": file["name"],
+                        "project_id": file["project_id"],
+                        "metadata": file["metadata"],
+                        "created_by": user_id,
+                        "code": file["code"]
+                    }
+                )
 
     def submit_all_codes_from_one_file_to_plagiarism(
         self, projects_files_id: int

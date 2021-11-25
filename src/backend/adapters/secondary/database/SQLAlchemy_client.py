@@ -45,6 +45,18 @@ class SQLAlchemyClient(SQLClient):
         data_obj = db.update(table_obj).where(getattr(table_obj.c, cond_column_name) == cond_column_value).values(values)
         self._engine.connect().execute(data_obj)
 
+    def update_multiple_where_values(
+            self, table: Text, values: Dict[Text, Any], cond_column: Dict[Text, Any]
+    ) -> None:
+        table_obj = db.Table(table, db.MetaData(), autoload=True, autoload_with=self._engine)
+        data_obj = db.update(table_obj).values(values)
+
+        for key, value in cond_column.items():
+            data_obj = data_obj.where(getattr(table_obj.c, key) == value)
+
+        data_obj = data_obj.values(values)
+        self._engine.connect().execute(data_obj)
+
     def get_values(
             self, table: Text, cond_column_name: Text = None, cond_column_value: Any = None
     ) -> List[Dict[Text, Any]]:

@@ -271,12 +271,24 @@ async def create_submission_files(
 @inject
 async def get_student_files(
         project_id: int,
-        user_id: int,
         database_client: SQLClient = Depends(Provide[Container.database_client]),
         current_user: dict = Depends(get_current_user)
 ):
     controller = MainController(logger=Logger, database_client=database_client)
-    response = controller.get_files_to_student(project_id=project_id, user_id=user_id)
+    response = controller.get_files_to_student(project_id=project_id, user_id=current_user["id"])
+    return response
+
+
+@router.post('/save_submission_files')
+@inject
+async def get_student_files(
+        project_id: int,
+        files: [SubmissionFiles],
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
+        current_user: dict = Depends(get_current_user)
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.save_submission_files(project_id=project_id, user_id=current_user["id"], files=files)
     return response
 
 

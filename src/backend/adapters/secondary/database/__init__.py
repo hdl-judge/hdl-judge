@@ -23,6 +23,11 @@ class SQLClient(ABC):
     ) -> None:
         pass
 
+    def update_multiple_where_values(
+            self, table: Text, values: Dict[Text, Any], cond_column: Dict[Text, Any]
+    ) -> None:
+        pass
+
     @abstractmethod
     def get_values(
             self, table: Text, cond_column_name: Text = None, cond_column_value: Any = None
