@@ -51,3 +51,7 @@ class SQLClient(ABC):
     @abstractmethod
     def query(self, query_text: Text) -> List[Dict[Any, Any]]:
         pass
+
+    @abstractmethod
+    def get_submissions_grouped_by_user(self) -> List[Dict[Text, Any]]:
+        pass

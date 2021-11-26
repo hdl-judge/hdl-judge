@@ -42,6 +42,7 @@
         padding: 0.5rem;
         border-radius: 6px;
         color: white;
+        text-decoration: none;
     }
 
     .nav-button:hover {

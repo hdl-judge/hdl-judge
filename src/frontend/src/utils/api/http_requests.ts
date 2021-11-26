@@ -9,6 +9,8 @@ export async function post(route:string, body: object): Promise<any> {
         },
         body: JSON.stringify(body)
     });
+    if (!response.ok)
+        throw "not ok"
     return await response.json();
 }
 

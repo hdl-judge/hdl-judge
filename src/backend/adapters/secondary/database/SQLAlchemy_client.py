@@ -2,7 +2,7 @@ import sqlalchemy as db
 
 from typing import Text, Dict, Any, List
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import inspect, MetaData, event
+from sqlalchemy import inspect, MetaData, event, func, select
 from sqlalchemy.engine import Engine
 
 from src.backend.adapters.secondary.database import SQLClient
@@ -113,6 +113,24 @@ class SQLAlchemyClient(SQLClient):
             ]
         else:
             return []
+
+    def get_submissions_grouped_by_user(self, project_id: int) -> List[Dict[Text, Any]]:
+        submissions = db.Table('submission_files', db.MetaData(), autoload=True, autoload_with=self._engine)
+        users = db.Table('users', db.MetaData(), autoload=True, autoload_with=self._engine)
+        conn = self._engine.connect()
+
+        stmt = select(users.c.name, func.count(submissions.c.id).label("count"), users.c.id)\
+            .select_from(submissions.join(users, users.c.id == submissions.c.created_by))\
+            .where(submissions.c.project_id == project_id)\
+            .group_by(users.c.name, users.c.id)
+
+        table_values = conn.execute(stmt).fetchall()
+
+        conn.close()
+        return [
+            {k: v for k, v in zip(value.keys(), value)}
+            for value in table_values
+        ]
 
 
 if __name__ == "__main__":

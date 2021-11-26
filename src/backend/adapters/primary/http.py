@@ -16,7 +16,8 @@ from src.backend.adapters.secondary.plagiarism_detector import PlagiarismDetecto
 from src.backend.adapters.secondary.hdl_motor import HDLMotor
 from src.backend.adapters.primary.api.schemas.submission import Submission
 from src.backend.adapters.primary.api.schemas.submission_return import SubmissionReturn
-from src.backend.schema.request import UserModel, ProjectModel, ProjectFilesModel, TestbenchFiles, SubmissionFiles
+from src.backend.schema.request import UserModel, ProjectModel, ProjectFilesModel, TestbenchFiles, SubmissionFiles, \
+    SaveSubmissionFilesDto
 
 from src.backend.dependencies import get_container
 from dependency_injector.wiring import inject, Provide
@@ -83,6 +84,12 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+async def get_current_admin_user(current_user: User = Depends(get_current_user)):
+    if not current_user["is_admin"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not admin")
+    return current_user
 
 
 # @router.get('/', response_model=Response)
@@ -186,7 +193,7 @@ async def get_values(
 
 @router.put('/update_value/{table_name}')
 @inject
-async def delete_value(
+async def update_value(
         table_name: Text,
         id: int,
         data: Dict[str, float],
@@ -269,7 +276,7 @@ async def create_submission_files(
 
 @router.get('/get_files_to_student')
 @inject
-async def get_student_files(
+async def get_files_to_student(
         project_id: int,
         database_client: SQLClient = Depends(Provide[Container.database_client]),
         current_user: dict = Depends(get_current_user)
@@ -281,14 +288,17 @@ async def get_student_files(
 
 @router.post('/save_submission_files')
 @inject
-async def get_student_files(
-        project_id: int,
-        files: List[SubmissionFiles],
+async def save_submission_files(
+        submission_dto: SaveSubmissionFilesDto,
         database_client: SQLClient = Depends(Provide[Container.database_client]),
         current_user: dict = Depends(get_current_user)
 ):
     controller = MainController(logger=Logger, database_client=database_client)
-    response = controller.save_submission_files(project_id=project_id, user_id=current_user["id"], files=files)
+    response = controller.save_submission_files(
+        project_id=submission_dto.project_id,
+        user_id=current_user["id"],
+        files=submission_dto.files
+    )
     return response
 
 
@@ -302,4 +312,16 @@ async def submit_all_codes_from_project_to_plagiarism(
     response = controller.submit_all_codes_from_project_to_plagiarism(
         project_id=project_id
     )
+    return response
+
+
+@router.get('/get_project_submissions')
+@inject
+async def get_project_submissions_per_student(
+        project_id: int,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
+        current_user: dict = Depends(get_current_admin_user)
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.get_project_submissions_by_student(project_id=project_id)
     return response

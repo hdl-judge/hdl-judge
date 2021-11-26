@@ -24,7 +24,7 @@ class GHDLMotor(HDLMotor):
 
                     if filename.endswith('.json'):
                         content = self.generate_testbench(content, toplevel_entity)
-                        filename = f"{toplevel_entity}_tb.vhdl"
+                        filename = f"tb.vhdl"
 
                     with open(os.path.join(tmpdir, filename), 'w') as file:
                         file.write(content)

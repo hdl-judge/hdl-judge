@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List, Dict, Text, Any
 
 
 class UserModel(BaseModel):
@@ -33,3 +33,8 @@ class SubmissionFiles(BaseModel):
     project_id: int
     metadata: str
     code: str
+
+
+class SaveSubmissionFilesDto(BaseModel):
+    project_id: int
+    files: List[Dict[Text, Any]]

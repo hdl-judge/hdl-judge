@@ -174,47 +174,56 @@ class MainController(BaseController):
     def get_files_to_student(self, project_id: int, user_id: int) -> List[Dict[Text, Any]]:
         files_to_return = []
         projects_files = self.database_client.get_multiple_where_values("projects_files", {"project_id": project_id})
-        projects_files_ids = [record["id"] for record in projects_files]
+        projects_files_names = [record["name"] for record in projects_files]
 
-        user_submission_files = self.database_client.get_multiple_where_values("submission_files", {"created_by": user_id})
-        user_submission_files_project_ids = [record["project_id"] for record in user_submission_files]
+        user_submission_files = self.database_client.get_multiple_where_values("submission_files",
+                                                                               {
+                                                                                   "created_by": user_id,
+                                                                                   "project_id": project_id
+                                                                               })
+        user_submission_files_project_names = [record["name"] for record in user_submission_files]
 
         for record in user_submission_files:
-            if record["project_id"] in projects_files_ids:
+            if record["name"] in projects_files_names:
                 files_to_return.append(record)
 
         for record in projects_files:
-            if record["id"] not in user_submission_files_project_ids:
+            if record["name"] not in user_submission_files_project_names:
                 files_to_return.append({
-                    "id": None,
-                    "project_id": record["id"],
+                    "id": record["id"],
+                    "project_id": record["project_id"],
                     "name": record["name"],
                     "code": record["default_code"],
-                    "metadata": "",
+                    "metadata": record["metadata"],
                     "created_at": record["created_at"],
                     "created_by": record["created_by"]
                 })
 
         return files_to_return
 
-    def save_submission_files(self, project_id: int, user_id: int, files: List[Dict[Text, Any]]) -> List[Dict[Text, Any]]:
+    def save_submission_files(self, project_id: int, user_id: int, files: List[Dict[Text, Any]]):
 
-        user_submission_files = self.database_client.get_multiple_where_values("submission_files", {"created_by": user_id})
-        user_submission_files_hash = [f'{record["name"]}_{project_id}' if record["project_id"] == project_id else None
-                                      for record in user_submission_files]
+        user_submission_files = self.database_client.get_multiple_where_values(
+            "submission_files",
+            {
+                "created_by": user_id,
+                "project_id": project_id,
+            }
+        )
+        user_submission_file_names = [record["name"] for record in user_submission_files]
 
         for file in files:
-            if f'{file["name"]}_{file["project_id"]}' in user_submission_files_hash:
+            if file["name"] in user_submission_file_names:
                 self.database_client.update_multiple_where_values(
                     "submission_files", file,
-                    {"project_id": file["project_id"], "name": file["name"], "created_by": user_id}
+                    {"project_id": project_id, "name": file["name"], "created_by": user_id}
                 )
             else:
                 self.database_client.insert_values(
                     "submission_files",
                     {
                         "name": file["name"],
-                        "project_id": file["project_id"],
+                        "project_id": project_id,
                         "metadata": file["metadata"],
                         "created_by": user_id,
                         "code": file["code"]
@@ -317,3 +326,7 @@ class MainController(BaseController):
         } for val in tb_files])
 
         return self.code_motor.get_waveform(toplevel_entity, files)
+
+    def get_project_submissions_by_student(self, project_id: int) -> List[Dict[Text, Any]]:
+        grouped_submissions = self.database_client.get_submissions_grouped_by_user(project_id)
+        return grouped_submissions

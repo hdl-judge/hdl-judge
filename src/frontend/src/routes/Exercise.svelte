@@ -18,6 +18,8 @@
     let loading = false;
     let waveDiv;
     let toplevelEntity = "";
+    let selected;
+    let testbenchName = "tb.vhdl";
 
     onMount(async () => {
         editor.on("change", onChangeContent);
@@ -32,9 +34,7 @@
         if ($userStore.is_admin) {
             tabItems = await getFilesFromProject(params.id);
         } else {
-            tabItems = await getSubmissonFiles(params.id, $userStore.id);
-            if (!tabItems.length > 0)
-                tabItems = await getFilesFromProject(params.id);
+            tabItems = await getSubmissonFiles(params.id);
         }
         if (tabItems.length > 0)
             editor.setValue(tabItems[currentTab].content);
@@ -43,7 +43,6 @@
     async function onRunFiles(): Promise<void> {
         await onSaveFiles();
         loading = true;
-        console.log(tabItems)
         let response = await submitTest(tabItems, toplevelEntity);
         loading = false;
 
@@ -56,10 +55,14 @@
 
     async function onSaveFiles(): Promise<void> {
         loading = true;
-        await removeFiles();
-        await saveFiles();
-        loading = false;
-        message = "Arquivos salvos.\n";
+        try {
+            await saveFiles();
+            message = "Arquivos salvos.\n";
+        } catch {
+            message = "Não foi possível salvar os arquivos.\n";
+        } finally {
+            loading = false;
+        }
     }
 
     async function saveFiles() {
@@ -144,6 +147,7 @@
         loading = true;
         await removeFiles();
         await setTabItems();
+        await saveFiles();
         loading = false;
     }
 </script>
@@ -160,14 +164,19 @@
 
     <nav>
         <div class="controls">
-            <input type="text" bind:value={toplevelEntity}>
+            <select bind:value={selected}>
+                <option value="wave.json">Gerar onda (wave.json)</option>
+                <option value={testbenchName}>Testbench ({testbenchName})</option>
+            </select>
             {#if vcd}
                 <button on:click={() => createAndDownloadFile(vcd, "result", "vcd")}>
                     Download VCD
                 </button>
                 <button on:click={() => window.open("http://raczben.pythonanywhere.com/")}>Abrir visualizador de forma de onda</button>
             {/if}
-            <button on:click={onReset}>Reset</button>
+            {#if !$userStore.is_admin}
+                <button on:click={onReset}>Reset</button>
+            {/if}
             <button on:click={onSaveFiles}>Salvar</button>
             <button on:click={onRunFiles}>Rodar</button>
         </div>
@@ -191,12 +200,11 @@
                 {message}
             {/if}
         </div>
-<!--        <iframe title="waveform" src="http://raczben.pythonanywhere.com/"></iframe>-->
     </aside>
 </section>
 
 <style>
-    input {
+    select {
         margin: 0 0.3rem 0 0;
         padding: 0.3rem;
     }
@@ -220,12 +228,6 @@
     .message {
         padding: 1rem;
         box-sizing: border-box;
-    }
-
-    iframe {
-        width: 100%;
-        height: 69%;
-        border: 0;
     }
 
     .panel {

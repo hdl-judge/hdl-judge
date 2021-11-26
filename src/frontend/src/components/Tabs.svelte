@@ -1,5 +1,8 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
+    import {pop} from "svelte-spa-router";
+    import {Icon} from "svelte-awesome";
+    import {arrowLeft} from "svelte-awesome/icons";
 
     export let items = [];
     export let activeTabValue = 0;
@@ -20,6 +23,8 @@
 </script>
 
 <section class="tabs">
+    <span on:click={pop} class="btn btn-icon"><Icon data={arrowLeft} /></span>
+
     <div class="nav-button" on:click={() => dispatch('deleteTab')}>
         <img alt="deletar" id="delete" src="icons/x.svg" />
     </div>
@@ -38,6 +43,25 @@
 </section>
 
 <style>
+    .btn {
+        margin: 0.3rem;
+        padding: 0.5rem;
+        border-radius: 6px;
+        color: white;
+        background: #444;
+        text-decoration: none;
+    }
+
+    .btn:hover {
+        background: dimgray;
+        cursor: pointer;
+    }
+
+    .btn-icon {
+        display: inline-block;
+        padding: 0.3rem 0.5rem 0.3rem 0.5rem;
+    }
+
     .tabs {
         background: #333;
         display: flex;

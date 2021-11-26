@@ -10,6 +10,8 @@
     import { userStore } from "../utils/store";
     import Users from "./users/Users.svelte";
     import UserForm from "./users/UserForm.svelte";
+    import Submissions from "./Submissions.svelte";
+    import Loading from "../components/Loading.svelte";
 
     const routes = {
         '/': Home,
@@ -18,10 +20,14 @@
         '/login': Login,
         '/users': Users,
         '/users/new': UserForm,
+        '/submissions/:id': Submissions,
         '*': Home,
     }
 
+    let loading = true;
+
     onMount(async () => {
+        loading = true;
         let accessToken = localStorage.getItem("access_token");
         if (accessToken) {
             let user = await getUserData();
@@ -29,6 +35,7 @@
                 $userStore = user
             }
         }
+        loading = false;
     })
 </script>
 
@@ -40,7 +47,11 @@
     <Navbar />
 
     <section class="content">
-        <Router {routes}/>
+        {#if loading}
+            <Loading />
+        {:else}
+            <Router {routes}/>
+        {/if}
     </section>
 </main>
 

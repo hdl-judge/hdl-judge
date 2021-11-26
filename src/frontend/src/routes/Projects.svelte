@@ -1,35 +1,33 @@
 <script lang="ts">
-    import { getAllExercises, createExercise, removeExercise } from '../utils/api/api';
-    import { getStorageKey } from '../utils/utils';
+    import { getAllProjects, createProject, removeProject } from '../utils/api/api';
     import { onMount } from 'svelte';
     import Loading from '../components/Loading.svelte';
     import { link } from 'svelte-spa-router'
     import {userStore} from "../utils/store";
 
-    let exercises = [];
+    let projects = [];
     let loading = true;
 
-    async function loadExercises() {
+    async function loadProjects() {
         loading = true;
-        exercises = await getAllExercises();
+        projects = await getAllProjects();
         loading = false;
     }
 
-    onMount(loadExercises);
+    onMount(loadProjects);
 
-    async function onClickAddExercise() {
+    async function onClickAddProject() {
         let name = prompt("Digite o nome do exercício");
         loading = true;
-        await createExercise(name);
-        await loadExercises();
+        await createProject(name);
+        await loadProjects();
         loading = false;
     }
 
-    async function onClickRemoveExercise(id) {
+    async function onClickRemoveProject(id) {
         loading = true;
-        await removeExercise(id);
-        localStorage.removeItem(getStorageKey(id, $userStore.email_address));
-        await loadExercises();
+        await removeProject(id);
+        await loadProjects();
         loading = false;
     }
 </script>
@@ -42,14 +40,18 @@
             <tr>
                 <th>Nome do projeto</th>
                 {#if $userStore && $userStore.is_admin}
-                    <th class="clickable" on:click={onClickAddExercise}><img alt="adicionar" class="icon" src="icons/plus.svg" /></th>
+                    <th class="clickable" on:click={onClickAddProject}><img alt="adicionar" class="icon" src="icons/plus.svg" /></th>
                 {/if}
             </tr>
-            {#each exercises as exercise (exercise.id)}
+            {#each projects as project (project.id)}
                 <tr>
-                    <td><a href="/projects/{exercise.id}" use:link class="nav-button">{exercise.name}</a></td>
                     {#if $userStore && $userStore.is_admin}
-                        <td class="clickable" on:click={() => onClickRemoveExercise(exercise.id)}><img alt="remover" class="icon" src="icons/x.svg" /></td>
+                        <td><a href="/submissions/{project.id}" use:link class="nav-button">{project.name}</a></td>
+                    {:else}
+                        <td><a href="/projects/{project.id}" use:link class="nav-button">{project.name}</a></td>
+                    {/if}
+                    {#if $userStore && $userStore.is_admin}
+                        <td class="clickable" on:click={() => onClickRemoveProject(project.id)}><img alt="remover" class="icon" src="icons/x.svg" /></td>
                     {/if}
                 </tr>
             {/each}

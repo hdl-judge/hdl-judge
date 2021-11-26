@@ -36,18 +36,18 @@ export async function submitTest(items: File[], toplevelEntity: string): Promise
 	return await post("/submit", submission)
 }
 
-export async function getAllExercises() {
+export async function getAllProjects() {
     return await get("/get_values/projects");
 }
 
-export async function createExercise(name: string, userId: number = 1) {
+export async function createProject(name: string, userId: number = 1) {
     await post("/create_project", {
         name,
         created_by: userId
     });
 }
 
-export async function removeExercise(id: number) {
+export async function removeProject(id: number) {
     await del("/delete_value/projects", {
        id
     });
