@@ -1,7 +1,8 @@
 import {del, get, post} from "./http_requests";
-import type {File} from "./api";
+import type {FileDto} from "./api";
+import {getMossKey} from "../utils";
 
-export async function saveSubmissionFiles(files: File[], projectId: string): Promise<void> {
+export async function saveSubmissionFiles(files: FileDto[], projectId: string): Promise<void> {
     await post("/save_submission_files", {
         project_id: parseInt(projectId, 10),
         files: files.map(x => ({
@@ -10,17 +11,6 @@ export async function saveSubmissionFiles(files: File[], projectId: string): Pro
             metadata: ""
         })),
     });
-}
-
-export async function saveSubmissionFiles2(files: File[], projectId: number): Promise<void> {
-    for (let file of files) {
-        await post("/create_submission_files", {
-            name: file.filename,
-            project_id: projectId,
-            code: file.content,
-            metadata: ""
-        });
-    }
 }
 
 export async function removeSubmissionFile(id: number) {
@@ -53,4 +43,10 @@ export async function getSubmissonFiles2(projectId: number, userId: number) {
 export async function getAllProjectSubmissons(projectId: number) {
     let submissions = await get("/get_project_submissions", {"project_id": projectId});
     return submissions;
+}
+
+export async function sendSubmissionsToMoss(projectId: number) {
+    let result = await get("/submit_all_codes_from_project_to_plagiarism", {"project_id": projectId});
+    localStorage.setItem(getMossKey(projectId), result[0])
+    return result;
 }

@@ -2,13 +2,22 @@
     import { onMount } from 'svelte';
     import Loading from '../components/Loading.svelte';
     import {link, pop} from 'svelte-spa-router';
-    import {getAllProjectSubmissons} from "../utils/api/submissions";
+    import {getAllProjectSubmissons, sendSubmissionsToMoss} from "../utils/api/submissions";
     import {arrowLeft} from "svelte-awesome/icons";
     import {Icon} from "svelte-awesome";
+    import {getMossKey} from "../utils/utils";
 
     export let params: any = {};
     let students = [];
     let loading = true;
+    let mossResultUrl: string;
+
+    onMount(async () => {
+        await loadSubmissions();
+        let cachedMossResult = localStorage.getItem(getMossKey(params.id));
+        if (cachedMossResult)
+            mossResultUrl = cachedMossResult;
+    });
 
     async function loadSubmissions() {
         loading = true;
@@ -16,7 +25,12 @@
         loading = false;
     }
 
-    onMount(loadSubmissions);
+    async function submitToMoss() {
+        loading = true;
+        let result = await sendSubmissionsToMoss(params.id);
+        mossResultUrl = result[0];
+        loading = false;
+    }
 
 </script>
 
@@ -25,9 +39,14 @@
         <Loading/>
     {:else}
         <span on:click={pop} class="btn btn-icon"><Icon data={arrowLeft} /></span>
-        <a href="/projects/{params.id}" use:link class="btn">Editar arquivos padrão do projeto</a>
-        <span class="btn">Adicionar testbench</span>
-        <span class="btn">Enviar arquivos para detecção de plágio (Moss)</span>
+        <a href="/project_files/{params.id}" use:link class="btn">Editar arquivos padrão do projeto</a>
+        <a href="/testbench/{params.id}" use:link class="btn">Editar testbench</a>
+        {#if mossResultUrl}
+            <a href={mossResultUrl} class="btn" target="_blank" rel="noopener noreferrer">Ver resultados do Moss</a>
+        {/if}
+        <span class="btn" on:click={submitToMoss}>
+            Enviar arquivos para detecção de plágio (Moss)
+        </span>
         <br>
         {#if students.length > 0}
             <table>

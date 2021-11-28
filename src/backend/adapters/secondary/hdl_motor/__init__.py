@@ -7,5 +7,5 @@ from src.backend.adapters.primary.api.schemas.submission_return import Submissio
 
 class HDLMotor(ABC):
     @abstractmethod
-    def get_waveform(self, toplevel_entity: Text, files: List[File]) -> SubmissionReturn:
+    def get_waveform(self, files: List[File]) -> SubmissionReturn:
         pass

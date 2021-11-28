@@ -26,7 +26,6 @@ class MainController(BaseController):
         self.plagiarism_client = plagiarism_client
         self.code_motor = code_motor
 
-
     def submit_codes_to_plagiarism(self):
         file = open("C:\\Users\\felip\\Documents\\GitHub\\hdl-judge\\test_moss\\subs\\F_POLI-1.vhd", 'r')
         code = file.read()
@@ -196,6 +195,22 @@ class MainController(BaseController):
 
         return files_to_return
 
+    def get_projects_files(self, project_id: int) -> List[Dict[Text, Any]]:
+        files_to_return = []
+        projects_files = self.database_client.get_multiple_where_values("projects_files", {"project_id": project_id})
+
+        for record in projects_files:
+            files_to_return.append({
+                "id": record["id"],
+                "project_id": record["project_id"],
+                "name": record["name"],
+                "default_code": record["default_code"],
+                "created_at": record["created_at"],
+                "created_by": record["created_by"]
+            })
+
+        return files_to_return
+
     def save_submission_files(self, project_id: int, user_id: int, files: List[Dict[Text, Any]]):
 
         user_submission_files = self.database_client.get_multiple_where_values(
@@ -275,7 +290,7 @@ class MainController(BaseController):
         projects_files_names = [projects_file["name"] for projects_file in project_files_data]
 
         academic_id_map = {}
-        user_data = self.database_client.get_values("user")
+        user_data = self.database_client.get_values("users")
         for user in user_data:
             academic_id_map[user["id"]] = user["academic_id"]
 

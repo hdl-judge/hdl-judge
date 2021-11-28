@@ -48,7 +48,7 @@
                     {#if $userStore && $userStore.is_admin}
                         <td><a href="/submissions/{project.id}" use:link class="nav-button">{project.name}</a></td>
                     {:else}
-                        <td><a href="/projects/{project.id}" use:link class="nav-button">{project.name}</a></td>
+                        <td><a href="/exercise/{project.id}" use:link class="nav-button">{project.name}</a></td>
                     {/if}
                     {#if $userStore && $userStore.is_admin}
                         <td class="clickable" on:click={() => onClickRemoveProject(project.id)}><img alt="remover" class="icon" src="icons/x.svg" /></td>
