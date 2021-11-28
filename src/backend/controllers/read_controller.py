@@ -185,7 +185,8 @@ class MainController(BaseController):
 
         for record in user_submission_files:
             if record["name"] in projects_files_names:
-                files_to_return.append(record)
+                pass
+            files_to_return.append(record)
 
         for record in projects_files:
             if record["name"] not in user_submission_files_project_names:
@@ -194,7 +195,7 @@ class MainController(BaseController):
                     "project_id": record["project_id"],
                     "name": record["name"],
                     "code": record["default_code"],
-                    "metadata": record["metadata"],
+                    "metadata": record.get("metadata", ""),
                     "created_at": record["created_at"],
                     "created_by": record["created_by"]
                 })

@@ -87,6 +87,88 @@ def test_create_testbench_files_base(controller, database_client):
     assert result == expected
 
 
+def test_get_files_to_student(controller, database_client):
+    project_id = 123
+    created_by = 1234
+    created_at = datetime.now(),
+
+    database_client.get_multiple_where_values.side_effect = [
+        [
+            {
+                "id": 125,
+                "name": "Project file 1",
+                "project_id": project_id,
+                "created_by": created_by,
+                "created_at": created_at,
+                "default_code": "CODE_1"
+            },
+            {
+                "id": 126,
+                "name": "Project file 2",
+                "project_id": project_id,
+                "created_by": created_by,
+                "created_at": created_at,
+                "default_code": "CODE_2"
+            }
+        ],
+        [
+            {
+                "id": 1235,
+                "name": "Project file 2",
+                "project_id": project_id,
+                "metadata": "META 1",
+                "code": "CODE 1",
+                "created_at": created_at,
+                "created_by": created_by
+            },
+            {
+                "id": 1236,
+                "name": "Project file 3",
+                "project_id": project_id,
+                "metadata": "META 1",
+                "code": "CODE 1",
+                "created_at": created_at,
+                "created_by": created_by
+            }
+        ]
+    ]
+
+    result = controller.get_files_to_student(project_id, created_by)
+    expected = [
+            {
+                "id": 1235,
+                "name": "Project file 2",
+                "project_id": project_id,
+                "metadata": "META 1",
+                "code": "CODE 1",
+                "created_at": created_at,
+                "created_by": created_by
+            },
+            {
+                "id": 1236,
+                "name": "Project file 3",
+                "project_id": project_id,
+                "metadata": "META 1",
+                "code": "CODE 1",
+                "created_at": created_at,
+                "created_by": created_by
+            },
+            {
+                "id": 125,
+                "name": "Project file 1",
+                "project_id": project_id,
+                "metadata": "",
+                "code": "CODE_1",
+                "created_at": created_at,
+                "created_by": created_by
+            }
+        ]
+
+    assert len(result) == len(expected)
+    assert result == expected
+    assert database_client.get_multiple_where_values.call_count == 2
+
+
 def test_submit_all_codes_from_project_to_plagiarism_base(controller, database_client, plagiarism_client):
     projects_files_id = 137
     project_id = 547
