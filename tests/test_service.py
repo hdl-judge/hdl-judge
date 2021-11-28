@@ -45,7 +45,7 @@ def client():
 
         os.environ["SERVICE_ENV"] = "test"
 
-        app = create_app(True)
+        app = create_app(is_test=True)
 
         app.container.database_client.override(
             providers.Factory(
@@ -57,6 +57,8 @@ def client():
         yield TestClient(app)
     finally:
         meta.drop_all(engine)
+        del engine
+        del meta
 
 
 def test_health(client):

@@ -11,9 +11,6 @@ from src.backend.utils.db_schema_tables import create_tables
 
 
 class MainController(BaseController):
-    @property
-    def POSTS_ENDPOINT(self):
-        return "https://www.uol.com.br/"
 
     def __init__(
             self,
@@ -29,9 +26,6 @@ class MainController(BaseController):
         self.plagiarism_client = plagiarism_client
         self.code_motor = code_motor
 
-    def get_data(self) -> Dict[Text, Any]:
-        result = self.http_adapter.get(self.POSTS_ENDPOINT)
-        return result
 
     def submit_codes_to_plagiarism(self):
         file = open("C:\\Users\\felip\\Documents\\GitHub\\hdl-judge\\test_moss\\subs\\F_POLI-1.vhd", 'r')
@@ -277,7 +271,6 @@ class MainController(BaseController):
     def submit_all_codes_from_project_to_plagiarism(
         self, project_id: int
     ):
-        a = self.database_client
         project_files_data = self.database_client.get_values("projects_files", "project_id", project_id)
         projects_files_names = [projects_file["name"] for projects_file in project_files_data]
 
