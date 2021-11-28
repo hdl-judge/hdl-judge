@@ -231,6 +231,33 @@ class MainController(BaseController):
                     }
                 )
 
+    def save_project_files(self, project_id: int, user_id: int, files: List[Dict[Text, Any]]):
+
+        project_files = self.database_client.get_multiple_where_values(
+            "projects_files",
+            {
+                "project_id": project_id
+            }
+        )
+        project_files_names = [record["name"] for record in project_files]
+
+        for file in files:
+            if file["name"] in project_files_names:
+                self.database_client.update_multiple_where_values(
+                    "projects_files", file,
+                    {"project_id": project_id, "name": file["name"]}
+                )
+            else:
+                self.database_client.insert_values(
+                    "projects_files",
+                    {
+                        "name": file["name"],
+                        "project_id": project_id,
+                        "created_by": user_id,
+                        "default_code": file["default_code"]
+                    }
+                )
+
     def submit_all_codes_from_one_file_to_plagiarism(
         self, projects_files_id: int
     ):

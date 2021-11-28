@@ -38,3 +38,8 @@ class SubmissionFiles(BaseModel):
 class SaveSubmissionFilesDto(BaseModel):
     project_id: int
     files: List[Dict[Text, Any]]
+
+
+class SaveProjectFilesDto(BaseModel):
+    project_id: int
+    files: List[Dict[Text, Any]]

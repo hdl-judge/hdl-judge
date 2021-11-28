@@ -175,6 +175,63 @@ def test_save_submission_files_base(controller, database_client):
     created_at = datetime.now()
     files = [
         {
+            "id": 125,
+            "name": "Project file 1",
+            "project_id": project_id,
+            "created_by": created_by,
+            "created_at": created_at,
+            "default_code": "CODE_1"
+        },
+        {
+            "id": 126,
+            "name": "Project file 2",
+            "project_id": project_id,
+            "created_by": created_by,
+            "created_at": created_at,
+            "default_code": "CODE_2"
+        },
+        {
+            "id": 127,
+            "name": "Project file 3",
+            "project_id": project_id,
+            "created_by": created_by,
+            "created_at": created_at,
+            "default_code": "CODE_3"
+        }
+    ]
+
+    database_client.get_multiple_where_values.side_effect = [
+        [
+            {
+                "id": 126,
+                "name": "Project file 2",
+                "project_id": project_id,
+                "created_by": created_by,
+                "created_at": created_at,
+                "default_code": "CODE_2"
+            },
+            {
+                "id": 127,
+                "name": "Project file 3",
+                "project_id": project_id,
+                "created_by": created_by,
+                "created_at": created_at,
+                "default_code": "CODE_3"
+            }
+        ]
+    ]
+
+    result = controller.save_project_files(project_id, created_by, files)
+    assert database_client.update_multiple_where_values.call_count == 2
+    assert database_client.insert_values.call_count == 1
+
+
+def test_save_project_files_base(controller, database_client):
+    project_id = 123
+    created_by = 1234
+    created_at = datetime.now()
+    files = [
+        {
             "id": 1235,
             "name": "Project file 1",
             "project_id": project_id,
@@ -226,10 +283,9 @@ def test_save_submission_files_base(controller, database_client):
         ]
     ]
 
-    result = controller.save_submission_files(project_id, created_by, files)
+    result = controller.save_project_files(project_id, created_by, files)
     assert database_client.update_multiple_where_values.call_count == 2
     assert database_client.insert_values.call_count == 1
-
 
 
 def test_submit_all_codes_from_project_to_plagiarism_base(controller, database_client, plagiarism_client):

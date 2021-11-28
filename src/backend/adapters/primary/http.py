@@ -17,7 +17,7 @@ from src.backend.adapters.secondary.hdl_motor import HDLMotor
 from src.backend.adapters.primary.api.schemas.submission import Submission
 from src.backend.adapters.primary.api.schemas.submission_return import SubmissionReturn
 from src.backend.schema.request import UserModel, ProjectModel, ProjectFilesModel, TestbenchFiles, SubmissionFiles, \
-    SaveSubmissionFilesDto
+    SaveSubmissionFilesDto, SaveProjectFilesDto
 
 from src.backend.dependencies import get_container
 from dependency_injector.wiring import inject, Provide
@@ -295,6 +295,22 @@ async def save_submission_files(
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     response = controller.save_submission_files(
+        project_id=submission_dto.project_id,
+        user_id=current_user["id"],
+        files=submission_dto.files
+    )
+    return response
+
+
+@router.post('/save_project_files')
+@inject
+async def save_project_files(
+        submission_dto: SaveProjectFilesDto,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
+        current_user: dict = Depends(get_current_admin_user)
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.save_project_files(
         project_id=submission_dto.project_id,
         user_id=current_user["id"],
         files=submission_dto.files
