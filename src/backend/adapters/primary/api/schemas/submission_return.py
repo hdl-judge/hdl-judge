@@ -9,3 +9,5 @@ class SubmissionReturn(BaseModel):
     status: ResponseStatus
     result: Optional[str]
     message: Optional[str]
+    mimetype: Optional[str]
+    filename: Optional[str]

@@ -1,19 +1,15 @@
 import {post, get, del, postFormData} from "./http_requests";
 
-export class File {
+export class FileDto {
 	filename: string;
 	content: string;
-}
-
-class Submission {
-	toplevel_entity: string;
-	files: object;
 }
 
 class SubmissionResponse {
 	status: string;
 	result: string;
     message: string;
+    filename: string;
 }
 
 export async function login(username: string, password: string) {
@@ -24,16 +20,8 @@ export async function login(username: string, password: string) {
     return result;
 }
 
-export async function submitTest(items: File[], toplevelEntity: string): Promise<SubmissionResponse> {
-	let submission = new Submission();
-	submission.toplevel_entity = toplevelEntity;
-    submission.files = items.filter(item =>
-        item.filename.endsWith(".vhdl") ||
-        item.filename.endsWith(".vhd") ||
-        item.filename.endsWith(".json")
-    );
-
-	return await post("/submit", submission)
+export async function runTest(projectId: string): Promise<SubmissionResponse> {
+	return await get("/submit", {project_id : parseInt(projectId, 10)})
 }
 
 export async function getAllProjects() {
@@ -53,26 +41,23 @@ export async function removeProject(id: number) {
     });
 }
 
-export async function saveProjectFiles(files: File[], projectId: number, userId: number = 1): Promise<void> {
-    for (let file of files) {
-        await post("/create_projects_files", {
-            name: file.filename,
-            project_id: projectId,
-            default_code: file.content,
-        });
-    }
+export async function saveProjectFiles(files: FileDto[], projectId: string): Promise<void> {
+    await post("/save_project_files", {
+        project_id: parseInt(projectId, 10),
+        files: files.map(x => ({
+            name: x.filename,
+            default_code: x.content,
+        })),
+    });
 }
 
 export async function getFilesFromProject(projectId: number) {
-    let files = await get("/get_values/projects_files");
-    let filteredFiles = files
-        .filter(x => x.project_id == projectId)
-        .map(x => ({
-            filename: x.name,
-            content: x.default_code,
-            id: x.id,
-        }));
-    return filteredFiles;
+    let files = await get("/get_projects_files", { project_id: projectId });
+    return files.map(x => ({
+        filename: x.name,
+        content: x.default_code,
+        id: x.id,
+    }));
 }
 
 export async function removeProjectFile(id: number) {

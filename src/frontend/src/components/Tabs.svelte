@@ -6,6 +6,8 @@
 
     export let items = [];
     export let activeTabValue = 0;
+    export let showDelete: boolean = true;
+    export let showAdd: boolean = true;
 
     const dispatch = createEventDispatcher();
 
@@ -25,9 +27,11 @@
 <section class="tabs">
     <span on:click={pop} class="btn btn-icon"><Icon data={arrowLeft} /></span>
 
-    <div class="nav-button" on:click={() => dispatch('deleteTab')}>
-        <img alt="deletar" id="delete" src="icons/x.svg" />
-    </div>
+    {#if showDelete}
+        <div class="nav-button" on:click={() => dispatch('deleteTab')}>
+            <img alt="deletar" id="delete" src="icons/x.svg" />
+        </div>
+    {/if}
     {#each items as item, i}
         <div
             class={activeTabValue === i ? 'nav-button active' : 'nav-button'}
@@ -37,9 +41,11 @@
             {item.filename}
         </div>
     {/each}
-    <div class="nav-button" on:click={() => dispatch('addTab')}>
-        <img alt="adicionar" id="add" src="icons/plus.svg" />
-    </div>
+    {#if showAdd}
+        <div class="nav-button" on:click={() => dispatch('addTab')}>
+            <img alt="adicionar" id="add" src="icons/plus.svg" />
+        </div>
+    {/if}
 </section>
 
 <style>

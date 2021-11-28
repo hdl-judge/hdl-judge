@@ -12,15 +12,19 @@
     import UserForm from "./users/UserForm.svelte";
     import Submissions from "./Submissions.svelte";
     import Loading from "../components/Loading.svelte";
+    import ProjectFiles from "./ProjectFiles.svelte";
+    import Testbench from "./Testbench.svelte";
 
     const routes = {
         '/': Home,
         '/projects': Projects,
-        '/projects/:id': Exercise,
+        '/exercise/:id': Exercise,
         '/login': Login,
         '/users': Users,
         '/users/new': UserForm,
         '/submissions/:id': Submissions,
+        '/project_files/:id': ProjectFiles,
+        '/testbench/:id': Testbench,
         '*': Home,
     }
 
