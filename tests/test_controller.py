@@ -235,28 +235,25 @@ def test_save_project_files_base(controller, database_client):
             "id": 1235,
             "name": "Project file 1",
             "project_id": project_id,
-            "metadata": "META 1-2",
-            "code": "CODE 1-2",
             "created_at": created_at,
-            "created_by": created_by
+            "created_by": created_by,
+            "default_code": "CODE 1-2"
         },
         {
             "id": 1236,
             "name": "Project file 2",
             "project_id": project_id,
-            "metadata": "META 2-2",
-            "code": "CODE 2-2",
             "created_at": created_at,
-            "created_by": created_by
+            "created_by": created_by,
+            "default_code": "CODE 2-2"
         },
         {
             "id": 1237,
             "name": "Project file 3",
             "project_id": project_id,
-            "metadata": "META 3-2",
-            "code": "CODE 3-2",
             "created_at": created_at,
-            "created_by": created_by
+            "created_by": created_by,
+            "default_code": "CODE 3-2"
         }
     ]
 
@@ -266,19 +263,17 @@ def test_save_project_files_base(controller, database_client):
                 "id": 1235,
                 "name": "Project file 1",
                 "project_id": project_id,
-                "metadata": "META 1",
-                "code": "CODE 1",
                 "created_at": created_at,
-                "created_by": created_by
+                "created_by": created_by,
+                "default_code": "CODE 1"
             },
             {
                 "id": 1236,
                 "name": "Project file 2",
                 "project_id": project_id,
-                "metadata": "META 2",
-                "code": "CODE 2",
                 "created_at": created_at,
-                "created_by": created_by
+                "created_by": created_by,
+                "default_code": "CODE 2"
             }
         ]
     ]
@@ -289,26 +284,16 @@ def test_save_project_files_base(controller, database_client):
 
 
 def test_submit_all_codes_from_project_to_plagiarism_base(controller, database_client, plagiarism_client):
-    projects_files_id = 137
     project_id = 547
     user_id = 12
     academic_id = "test_Academic_id"
     database_client.get_values.side_effect = [
         [{
-            "id": projects_files_id,  # projects_files
+            "id": 137,  # projects_files
             "name": "test_projects_files",
             "project_id": project_id,
             "created_at": datetime.now(),
             "created_by": user_id
-        }],
-        [{
-            "id": 126, #submission_files
-            "name": "test_submission_files",
-            "projects_files_id": projects_files_id,
-            "metadata": "metadata",
-            "created_at": datetime.now(),
-            "created_by": user_id,
-            "code": "code test_submission_files"
         }],
         [{
             "id": user_id,  # users
@@ -317,6 +302,15 @@ def test_submit_all_codes_from_project_to_plagiarism_base(controller, database_c
             "academic_id": academic_id,
             "is_professor": False,
             "is_admin": False
+        }],
+        [{
+            "id": 126, #submission_files
+            "name": "test_projects_files",
+            "project_id": project_id,
+            "metadata": "metadata",
+            "created_at": datetime.now(),
+            "created_by": user_id,
+            "code": "code test_submission_files"
         }]
     ]
 
@@ -347,9 +341,27 @@ def test_submit_all_codes_from_project_to_plagiarism_multiple_users_and_files(co
         ],
         [
             {
+                "id": user_id + 1,  # users 2
+                "name": "test_user2",
+                "email_address": "test2@test.com",
+                "academic_id": academic_id + "da",
+                "is_professor": False,
+                "is_admin": False
+            },
+            {
+                "id": user_id,  # users 1
+                "name": "test_user",
+                "email_address": "test@test.com",
+                "academic_id": academic_id,
+                "is_professor": False,
+                "is_admin": False
+            }
+        ],
+        [
+            {
                 "id": 126, #submission_files
-                "name": "test_submission_files",
-                "projects_files_id": projects_files_id,
+                "name": "test_projects_files1",
+                "project_id": projects_files_id,
                 "metadata": "metadata",
                 "created_at": datetime.now(),
                 "created_by": user_id,
@@ -357,30 +369,14 @@ def test_submit_all_codes_from_project_to_plagiarism_multiple_users_and_files(co
             },
             {
                 "id": 127, #submission_files
-                "name": "test_submission_files",
-                "projects_files_id": projects_files_id+1,
+                "name": "test_projects_files1",
+                "project_id": projects_files_id,
                 "metadata": "metadata",
                 "created_at": datetime.now(),
                 "created_by": user_id+1,
                 "code": "code test_submission_files"
             }
-        ],
-        [{
-            "id": user_id,  # users 1
-            "name": "test_user",
-            "email_address": "test@test.com",
-            "academic_id": academic_id,
-            "is_professor": False,
-            "is_admin": False
-        }],
-        [{
-            "id": user_id+1,  # users 2
-            "name": "test_user2",
-            "email_address": "test2@test.com",
-            "academic_id": academic_id+"da",
-            "is_professor": False,
-            "is_admin": False
-        }]
+        ]
     ]
 
     plagiarism_client.generate_report.return_value = ("www.test.com/123", "report as text")
@@ -390,7 +386,7 @@ def test_submit_all_codes_from_project_to_plagiarism_multiple_users_and_files(co
     assert result == expected
     assert plagiarism_client.add_student_files.call_count == 2
     assert plagiarism_client.generate_report.call_count == 1
-    assert database_client.get_values.call_count == 4
+    assert database_client.get_values.call_count == 3
 
 
 def test_submit_all_codes_from_project_to_plagiarism_less_cache_users_data_logic(controller, database_client, plagiarism_client):
@@ -408,26 +404,6 @@ def test_submit_all_codes_from_project_to_plagiarism_less_cache_users_data_logic
                 "created_by": user_id
             }
         ],
-        [
-            {
-                "id": 126, #submission_files
-                "name": "test_submission_files",
-                "projects_files_id": projects_files_id,
-                "metadata": "metadata",
-                "created_at": datetime.now(),
-                "created_by": user_id,
-                "code": "code test_submission_files"
-            },
-            {
-                "id": 127, #submission_files
-                "name": "test_submission_files",
-                "projects_files_id": projects_files_id+1,
-                "metadata": "metadata",
-                "created_at": datetime.now(),
-                "created_by": user_id,
-                "code": "code test_submission_files"
-            }
-        ],
         [{
             "id": user_id,  # users
             "name": "test_user2",
@@ -435,7 +411,27 @@ def test_submit_all_codes_from_project_to_plagiarism_less_cache_users_data_logic
             "academic_id": academic_id,
             "is_professor": False,
             "is_admin": False
-        }]
+        }],
+        [
+            {
+                "id": 126, #submission_files
+                "name": "test_projects_files1",
+                "project_id": project_id,
+                "metadata": "metadata",
+                "created_at": datetime.now(),
+                "created_by": user_id,
+                "code": "code test_submission_files"
+            },
+            {
+                "id": 127, #submission_files
+                "name": "test_projects_files1",
+                "project_id": project_id,
+                "metadata": "metadata",
+                "created_at": datetime.now(),
+                "created_by": user_id,
+                "code": "code test_submission_files"
+            }
+        ]
     ]
 
     plagiarism_client.generate_report.return_value = ("www.test.com/123", "report as text")

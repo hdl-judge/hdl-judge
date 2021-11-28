@@ -277,21 +277,27 @@ class MainController(BaseController):
     def submit_all_codes_from_project_to_plagiarism(
         self, project_id: int
     ):
+        a = self.database_client
         project_files_data = self.database_client.get_values("projects_files", "project_id", project_id)
-        academic_id_map = {}
-        for projects_file in project_files_data:
-            projects_files_id = projects_file["id"]
-            submission_files = self.database_client.get_values("submission_files", "projects_files_id", projects_files_id)
+        projects_files_names = [projects_file["name"] for projects_file in project_files_data]
 
-            for submission in submission_files:
+        academic_id_map = {}
+        user_data = self.database_client.get_values("user")
+        for user in user_data:
+            academic_id_map[user["id"]] = user["academic_id"]
+
+        submission_files = self.database_client.get_values("submission_files", "project_id", project_id)
+
+        for submission in submission_files:
+            if submission["name"] in projects_files_names:
                 if submission["created_by"] not in academic_id_map:
-                    academic_id = self.database_client.get_values("user", "id", submission["created_by"])[0]["academic_id"]
+                    academic_id = f"NOT_FOUND_ACADEMIC_ID_FOR_ID{submission['created_by']}"
                     academic_id_map[submission["created_by"]] = academic_id
                 else:
                     academic_id = academic_id_map[submission["created_by"]]
 
                 student_id = submission['created_by']
-                filename = f"proj{project_id}_file{projects_files_id}_id{academic_id}.vhd"
+                filename = f"proj{project_id}_file{submission['name']}_id{academic_id}.vhd"
                 code = submission["code"]
                 self.plagiarism_client.add_student_files(student_id, {filename: code})
 

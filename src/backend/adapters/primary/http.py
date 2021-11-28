@@ -16,7 +16,7 @@ from src.backend.adapters.secondary.plagiarism_detector import PlagiarismDetecto
 from src.backend.adapters.secondary.hdl_motor import HDLMotor
 from src.backend.adapters.primary.api.schemas.submission import Submission
 from src.backend.adapters.primary.api.schemas.submission_return import SubmissionReturn
-from src.backend.schema.request import UserModel, ProjectModel, ProjectFilesModel, TestbenchFiles, SubmissionFiles, \
+from src.backend.schema.request import User, UserModel, ProjectModel, ProjectFilesModel, TestbenchFiles, SubmissionFiles, \
     SaveSubmissionFilesDto, SaveProjectFilesDto
 
 from src.backend.dependencies import get_container
@@ -35,15 +35,6 @@ class Response(BaseModel):
     query: str
     limit: int
     gifs: Any
-
-
-class User(BaseModel):
-    id: int
-    name: Optional[str] = None
-    email_address: Optional[str] = None
-    academic_id: Optional[str] = None
-    is_professor: bool
-    is_admin: bool
 
 
 def create_access_token(
@@ -106,6 +97,11 @@ async def get_current_admin_user(current_user: User = Depends(get_current_user))
 #         'limit': 3,
 #         'gifs': request.text,
 #     }
+
+@router.get('/health')
+@inject
+async def health():
+    return True
 
 
 @router.get('/plagiarism')

@@ -2,6 +2,15 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict, Text, Any
 
 
+class User(BaseModel):
+    id: int
+    name: Optional[str] = None
+    email_address: Optional[str] = None
+    academic_id: Optional[str] = None
+    is_professor: bool
+    is_admin: bool
+
+
 class UserModel(BaseModel):
     name: str
     email_address: str

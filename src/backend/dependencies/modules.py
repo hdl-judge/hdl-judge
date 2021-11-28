@@ -25,7 +25,7 @@ class ProductionContainer(BaseContainer):
     )
     plagiarism_client = providers.Factory(
         MossClient,
-        BaseContainer.config.BaseConfig.idMoss
+        BaseContainer.config.idMoss
     )
     hdl_motor = providers.Factory(
         GHDLMotor
@@ -41,7 +41,7 @@ class TestContainer(BaseContainer):
     )
     plagiarism_client = providers.Factory(
         create_autospec(PlagiarismDetectorClient),
-        BaseContainer.config.BaseConfig.idMoss
+        BaseContainer.config.idMoss
     )
     hdl_motor = providers.Factory(
         create_autospec(HDLMotor)
@@ -57,7 +57,7 @@ class DevelopmentContainer(BaseContainer):
     )
     plagiarism_client = providers.Factory(
         MossClient,
-        BaseContainer.config.BaseConfig.idMoss
+        BaseContainer.config.idMoss
     )
     hdl_motor = providers.Factory(
       GHDLMotor
