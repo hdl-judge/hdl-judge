@@ -4,7 +4,7 @@ from logging import Logger
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
-from typing import Optional, Text, List
+from typing import Optional, Text
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -15,9 +15,8 @@ from src.backend.controllers.read_controller import MainController
 from src.backend.adapters.secondary.database import SQLClient
 from src.backend.adapters.secondary.plagiarism_detector import PlagiarismDetectorClient
 from src.backend.adapters.secondary.hdl_motor import HDLMotor
-from src.backend.adapters.primary.api.schemas.submission_return import SubmissionReturn
-from src.backend.schema.request import User, UserModel, ProjectModel, ProjectFilesModel, TestbenchFiles, SubmissionFiles, \
-    SaveSubmissionFilesDto, SaveProjectFilesDto
+from src.backend.schema.request import User, UserModel, ProjectModel, ProjectFilesModel, TestbenchFiles, \
+    SubmissionFiles, SaveSubmissionFilesDto, SaveProjectFilesDto, SaveTestbenchFileDto
 
 from src.backend.dependencies import get_container
 from dependency_injector.wiring import inject, Provide
@@ -77,7 +76,7 @@ async def get_current_user(
     return user
 
 
-async def get_current_admin_user(current_user: User = Depends(get_current_user)):
+async def get_current_admin_user(current_user: Dict = Depends(get_current_user)):
     if not current_user["is_admin"]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not admin")
     return current_user
@@ -140,7 +139,6 @@ async def submit(
 @inject
 async def setup(
         database_client: SQLClient = Depends(Provide[Container.database_client]),
-        current_user: dict = Depends(get_current_admin_user),
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     request = controller.setup()
@@ -359,4 +357,32 @@ async def get_project_submissions_per_student(
 ):
     controller = MainController(logger=Logger, database_client=database_client)
     response = controller.get_project_submissions_by_student(project_id=project_id)
+    return response
+
+
+@router.get('/get_testbench_files')
+@inject
+async def get_testbench_files(
+        project_id: int,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
+        current_user: dict = Depends(get_current_admin_user),
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.get_testbench_files(project_id=project_id)
+    return response
+
+
+@router.post('/save_testbench_file')
+@inject
+async def save_testbench_file(
+        testbench_file_dto: SaveTestbenchFileDto,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
+        current_user: dict = Depends(get_current_admin_user)
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.save_testbench_file(
+        project_id=testbench_file_dto.project_id,
+        user_id=current_user["id"],
+        file=testbench_file_dto.file
+    )
     return response

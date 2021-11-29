@@ -39,7 +39,7 @@ def create_tables():
         'testbench_files', meta,
         Column('id', Integer, primary_key=True),
         Column('name', String, unique=True),
-        Column('projects_files_id', Integer, ForeignKey("projects_files.id")),
+        Column('project_id', Integer, ForeignKey("projects.id", onupdate="CASCADE", ondelete="CASCADE")),
         Column('created_at', DateTime, server_default=func.now()),
         Column('created_by', Integer, ForeignKey("users.id")),
         Column('code', String)

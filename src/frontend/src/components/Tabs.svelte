@@ -8,6 +8,7 @@
     export let activeTabValue = 0;
     export let showDelete: boolean = true;
     export let showAdd: boolean = true;
+    export let allowRename: boolean = true;
 
     const dispatch = createEventDispatcher();
 
@@ -18,6 +19,8 @@
     }
 
     function handleDoubleClick(tabValue) {
+        if (!allowRename)
+            return;
         return () => {
             dispatch('renameTab', tabValue);
         };

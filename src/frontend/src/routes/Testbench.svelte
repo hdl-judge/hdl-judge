@@ -12,5 +12,7 @@
     showReset={false}
     showAdd={false}
     showDelete={false}
+    showRun={false}
+    allowRename={false}
     projectId={params.id}
 />

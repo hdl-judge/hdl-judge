@@ -14,6 +14,8 @@
     export let showReset: boolean = false;
     export let showDelete: boolean = true;
     export let showAdd: boolean = true;
+    export let showRun: boolean = true;
+    export let allowRename: boolean = true;
     let editor: CodeMirror.EditorFromTextArea;
     let message: string = "";
     let resultFileContent: string;
@@ -151,6 +153,7 @@
         on:deleteTab={deleteTab}
         showAdd={showAdd}
         showDelete={showDelete}
+        allowRename={allowRename}
     />
 
     <nav>
@@ -167,7 +170,9 @@
                 <button on:click={onReset}>Reset</button>
             {/if}
             <button on:click={onSaveFiles}>Salvar</button>
-            <button on:click={onRunFiles}>Rodar</button>
+            {#if showRun}
+                <button on:click={onRunFiles}>Rodar</button>
+            {/if}
         </div>
     </nav>
 

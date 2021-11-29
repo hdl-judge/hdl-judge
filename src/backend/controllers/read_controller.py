@@ -372,3 +372,44 @@ class MainController(BaseController):
     def get_project_submissions_by_student(self, project_id: int) -> List[Dict[Text, Any]]:
         grouped_submissions = self.database_client.get_submissions_grouped_by_user(project_id)
         return grouped_submissions
+
+    def get_testbench_files(self, project_id: int) -> List[Dict[Text, Any]]:
+        files_to_return = []
+        projects_files = self.database_client.get_multiple_where_values("testbench_files", {"project_id": project_id})
+
+        for record in projects_files:
+            files_to_return.append({
+                "id": record["id"],
+                "project_id": record["project_id"],
+                "name": record["name"],
+                "code": record["code"],
+                "created_at": record["created_at"],
+                "created_by": record["created_by"]
+            })
+
+        return files_to_return
+
+    def save_testbench_file(self, project_id: int, user_id: int, file: Dict[Text, Any]):
+        testbench_files = self.database_client.get_multiple_where_values(
+            "testbench_files",
+            {
+                "project_id": project_id
+            }
+        )
+        testbench_files_names = [record["name"] for record in testbench_files]
+
+        if file["name"] in testbench_files_names:
+            self.database_client.update_multiple_where_values(
+                "testbench_files", file,
+                {"project_id": project_id, "name": file["name"]}
+            )
+        else:
+            self.database_client.insert_values(
+                "testbench_files",
+                {
+                    "name": file["name"],
+                    "project_id": project_id,
+                    "created_by": user_id,
+                    "code": file["code"]
+                }
+            )

@@ -52,3 +52,8 @@ class SaveSubmissionFilesDto(BaseModel):
 class SaveProjectFilesDto(BaseModel):
     project_id: int
     files: List[Dict[Text, Any]]
+
+
+class SaveTestbenchFileDto(BaseModel):
+    project_id: int
+    file: Dict[Text, Any]

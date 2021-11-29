@@ -41,6 +41,7 @@
         <span on:click={pop} class="btn btn-icon"><Icon data={arrowLeft} /></span>
         <a href="/project_files/{params.id}" use:link class="btn">Editar arquivos padrão do projeto</a>
         <a href="/testbench/{params.id}" use:link class="btn">Editar testbench</a>
+        <span on:click={() => console.log("rodou")} class="btn">Rodar testbench</span>
         {#if mossResultUrl}
             <a href={mossResultUrl} class="btn" target="_blank" rel="noopener noreferrer">Ver resultados do Moss</a>
         {/if}
