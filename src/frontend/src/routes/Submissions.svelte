@@ -2,21 +2,35 @@
     import { onMount } from 'svelte';
     import Loading from '../components/Loading.svelte';
     import {link, pop} from 'svelte-spa-router';
-    import {getAllProjectSubmissons, sendSubmissionsToMoss} from "../utils/api/submissions";
+    import {
+        getAllProjectSubmissons,
+        getUserSubmissionFiles,
+        runAutocorrection,
+        sendSubmissionsToMoss
+    } from "../utils/api/submissions";
     import {arrowLeft} from "svelte-awesome/icons";
     import {Icon} from "svelte-awesome";
-    import {getMossKey} from "../utils/utils";
+    import {createAndDownloadFile, getMossKey} from "../utils/utils";
 
     export let params: any = {};
+    const resultKey = `result_${params.id}`;
     let students = [];
     let loading = true;
-    let mossResultUrl: string;
+    let mossResultUrl: string
+    let testbenchResult;
 
     onMount(async () => {
         await loadSubmissions();
         let cachedMossResult = localStorage.getItem(getMossKey(params.id));
         if (cachedMossResult)
             mossResultUrl = cachedMossResult;
+
+        let storedResult = localStorage.getItem(resultKey);
+        if (storedResult) {
+            try {
+                testbenchResult = await JSON.parse(storedResult);
+            } catch {}
+        }
     });
 
     async function loadSubmissions() {
@@ -32,6 +46,17 @@
         loading = false;
     }
 
+    async function downloadFiles(projectId, userId) {
+        let zip = await getUserSubmissionFiles(projectId, userId);
+        createAndDownloadFile(zip, `submission_project_${projectId}_user_${userId}.zip`);
+    }
+
+    async function onRunAutocorrection() {
+        let result = await runAutocorrection(params.id);
+        localStorage.setItem(resultKey, JSON.stringify(result));
+        testbenchResult = result;
+    }
+
 </script>
 
 <section>
@@ -41,7 +66,7 @@
         <span on:click={pop} class="btn btn-icon"><Icon data={arrowLeft} /></span>
         <a href="/project_files/{params.id}" use:link class="btn">Editar arquivos padrão do projeto</a>
         <a href="/testbench/{params.id}" use:link class="btn">Editar testbench</a>
-        <span on:click={() => console.log("rodou")} class="btn">Rodar testbench</span>
+        <span on:click={onRunAutocorrection} class="btn">Rodar testbench</span>
         {#if mossResultUrl}
             <a href={mossResultUrl} class="btn" target="_blank" rel="noopener noreferrer">Ver resultados do Moss</a>
         {/if}
@@ -55,12 +80,22 @@
                     <th>Nome do aluno</th>
                     <th>Quantidade de arquivos</th>
                     <th>Baixar arquivos</th>
+                    {#if testbenchResult}
+                        <th>Resultado da correção</th>
+                    {/if}
                 </tr>
                 {#each students as student (student.id)}
                     <tr>
                         <td>{student.name}</td>
                         <td class="center">{student.count}</td>
-                        <td class="center"><a href="/" use:link>Baixar</a></td>
+                        <td class="center"><span on:click={() => downloadFiles(params.id, student.id)} class="download">Baixar</span></td>
+                        {#if testbenchResult}
+                            {#if testbenchResult[student.id]}
+                                <td>{testbenchResult[student.id]}</td>
+                            {:else}
+                                <td></td>
+                            {/if}
+                        {/if}
                     </tr>
                 {/each}
             </table>
@@ -113,5 +148,15 @@
 
     a:hover {
         text-decoration: none;
+    }
+
+    .download {
+        color: white;
+        text-decoration: underline;
+    }
+
+    .download:hover {
+        text-decoration: none;
+        cursor: pointer;
     }
 </style>

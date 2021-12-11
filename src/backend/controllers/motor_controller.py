@@ -33,3 +33,30 @@ class MotorController(BaseController):
             files.append(new_file)
 
         return self.code_motor.get_waveform(files)
+
+    def run_autocorrection(self, project_id: int):
+        rows = self.database_client.get_multiple_where_values(
+            'submission_files',
+            {
+                'project_id': project_id,
+            }
+        )
+
+        testbenches = self.database_client.get_values('testbench_files', 'project_id', project_id)
+        if len(testbenches) < 1:
+            return
+        testbench = testbenches[0]
+
+        files_grouped_by_user = {}
+        for row in rows:
+            if row['created_by'] not in files_grouped_by_user:
+                files_grouped_by_user[row['created_by']] = []
+
+            files_grouped_by_user[row['created_by']].append(row)
+
+        messages = {}
+        for user_id, files in files_grouped_by_user.items():
+            files.append(testbench)
+            messages[user_id] = self.code_motor.run_autocorrection(files)
+
+        return messages

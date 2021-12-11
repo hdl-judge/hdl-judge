@@ -9,3 +9,7 @@ class HDLMotor(ABC):
     @abstractmethod
     def get_waveform(self, files: List[File]) -> SubmissionReturn:
         pass
+
+    @abstractmethod
+    def run_autocorrection(self, files: List[File]) -> SubmissionReturn:
+        pass

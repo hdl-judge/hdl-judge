@@ -119,12 +119,12 @@ class SQLAlchemyClient(SQLClient):
         users = db.Table('users', db.MetaData(), autoload=True, autoload_with=self._engine)
         conn = self._engine.connect()
 
-        stmt = select(users.c.name, func.count(submissions.c.id).label("count"), users.c.id)\
+        statement = select(users.c.name, func.count(submissions.c.id).label("count"), users.c.id)\
             .select_from(submissions.join(users, users.c.id == submissions.c.created_by))\
             .where(submissions.c.project_id == project_id)\
             .group_by(users.c.name, users.c.id)
 
-        table_values = conn.execute(stmt).fetchall()
+        table_values = conn.execute(statement).fetchall()
 
         conn.close()
         return [

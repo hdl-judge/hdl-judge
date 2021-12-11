@@ -386,3 +386,29 @@ async def save_testbench_file(
         file=testbench_file_dto.file
     )
     return response
+
+
+@router.get('/get_user_submission')
+@inject
+async def get_user_submission(
+        project_id: int,
+        user_id: int,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
+        current_user: dict = Depends(get_current_admin_user),
+):
+    controller = MainController(logger=Logger, database_client=database_client)
+    response = controller.get_user_submission_files(project_id=project_id, user_id=user_id)
+    return response
+
+
+@router.get('/run_testbench_for_all_users')
+@inject
+async def run_testbench_for_all_users(
+        project_id: int,
+        database_client: SQLClient = Depends(Provide[Container.database_client]),
+        code_motor: HDLMotor = Depends(Provide[Container.hdl_motor]),
+        current_user: dict = Depends(get_current_admin_user),
+):
+    controller = MotorController(logger=Logger, database_client=database_client, code_motor=code_motor)
+    response = controller.run_autocorrection(project_id=project_id)
+    return response

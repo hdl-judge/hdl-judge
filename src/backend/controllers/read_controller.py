@@ -1,5 +1,9 @@
+import base64
+import os
+import tempfile
 from logging import Logger
 from typing import Optional, List, Any, Dict, Text
+from zipfile import ZipFile
 
 from src.backend.controllers import BaseController
 
@@ -372,6 +376,23 @@ class MainController(BaseController):
     def get_project_submissions_by_student(self, project_id: int) -> List[Dict[Text, Any]]:
         grouped_submissions = self.database_client.get_submissions_grouped_by_user(project_id)
         return grouped_submissions
+
+    def get_user_submission_files(self, project_id: int, user_id: int) -> Text:
+        submission_files = self.database_client.get_multiple_where_values("submission_files",
+                                                                          {
+                                                                              "created_by": user_id,
+                                                                              "project_id": project_id,
+                                                                          })
+        with tempfile.TemporaryDirectory() as tmpdir:
+            zip_path = os.path.join(tmpdir, "result.zip")
+            with ZipFile(zip_path, 'w') as zip_file:
+                for submission_file in submission_files:
+                    zip_file.writestr(zinfo_or_arcname=submission_file["name"],
+                                      data=submission_file["code"])
+
+            with open(zip_path, 'rb') as zip_file:
+                encoded = base64.b64encode(zip_file.read())
+                return encoded
 
     def get_testbench_files(self, project_id: int) -> List[Dict[Text, Any]]:
         files_to_return = []

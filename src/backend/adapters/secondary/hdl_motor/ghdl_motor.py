@@ -5,7 +5,7 @@ import tempfile
 import glob
 import json
 
-from typing import Text, List, Any
+from typing import Text, List, Any, Dict
 from zipfile import ZipFile
 
 from src.backend.adapters.secondary.hdl_motor import HDLMotor
@@ -168,4 +168,52 @@ end architecture;"""
         else:
             wave_signal = s["wave"][-1] if len(s["wave"]) > 0 else ""
         return wave_signal
+
+    def run_autocorrection(self, files: List[Dict[str, Any]]) -> Text:
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                filelist = []
+                for inputFile in files:
+                    content = inputFile['code']
+                    filename = inputFile['name']
+                    (name, extension) = os.path.splitext(filename)
+
+                    if extension not in ('.vhdl', '.vhd'):
+                        continue
+
+                    with open(os.path.join(tmpdir, filename), 'w') as file:
+                        file.write(content)
+
+                    filelist.append(filename)
+
+                # Import testbench in GHDL to get the testbench entity name
+                entities = []
+                output = subprocess.run(["ghdl", "-i", "testbench.vhdl"], capture_output=True, cwd=tmpdir)
+                output.check_returncode()
+
+                with open(os.path.join(tmpdir, "work-obj93.cf"), 'r') as file:
+                    for line in file:
+                        if "entity" in line:
+                            entities.append(line.split()[1])
+
+                # Analyse
+                message = ""
+                output = subprocess.run(["ghdl", "-a", *filelist], capture_output=True, cwd=tmpdir, text=True)
+                output.check_returncode()
+                message += output.stdout
+
+                # Elaborate and run
+                output = subprocess.run(
+                    ["ghdl", "--elab-run", entities[0]],
+                    capture_output=True,
+                    cwd=tmpdir,
+                    text=True
+                )
+                output.check_returncode()
+                message += output.stdout
+
+                return message
+
+        except subprocess.CalledProcessError as ex:
+            return ex.stderr
 

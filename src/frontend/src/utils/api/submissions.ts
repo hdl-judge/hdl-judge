@@ -25,28 +25,34 @@ export async function getSubmissonFiles(projectId: number) {
         filename: x.name,
         content: x.code,
         id: x.id,
-    }));;
+    }));
 }
 
 export async function getSubmissonFiles2(projectId: number, userId: number) {
     let files = await get("/get_values/submission_files");
-    let filteredFiles = files
+    return files
         .filter(x => x.project_id == projectId && x.created_by == userId)
         .map(x => ({
             filename: x.name,
             content: x.code,
             id: x.id,
         }));
-    return filteredFiles;
 }
 
 export async function getAllProjectSubmissons(projectId: number) {
-    let submissions = await get("/get_project_submissions", {"project_id": projectId});
-    return submissions;
+    return await get("/get_project_submissions", {"project_id": projectId});
 }
 
 export async function sendSubmissionsToMoss(projectId: number) {
     let result = await get("/submit_all_codes_from_project_to_plagiarism", {"project_id": projectId});
     localStorage.setItem(getMossKey(projectId), result[0])
     return result;
+}
+
+export async function getUserSubmissionFiles(projectId: number, userId: number) {
+    return await get("/get_user_submission", {"project_id": projectId, "user_id": userId});
+}
+
+export async function runAutocorrection(projectId: number) {
+    return await get("/run_testbench_for_all_users", {"project_id": projectId});
 }
