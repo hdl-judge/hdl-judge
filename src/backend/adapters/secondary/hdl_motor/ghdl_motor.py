@@ -124,10 +124,13 @@ begin
 
         biggest_signal = max(signals, key=lambda x: len(x["wave"]))
         last_signals = {}
+        vector_signals = {}
         for s in signals:
             signal_name = s["name"]
             wave_signal = self.get_wave_signal(s, 0)
             last_signals[signal_name] = wave_signal
+            if "data" in s:
+                vector_signals[signal_name] = s["data"].split()
 
         for i in range(len(biggest_signal["wave"])):
             for s in filter(lambda signal: signal["dir"] == "in", signals):
@@ -135,16 +138,20 @@ begin
                 wave_signal = self.get_wave_signal(s, i)
                 if wave_signal == '.':
                     wave_signal = last_signals[signal_name]
+                elif wave_signal == '=':
+                    wave_signal = vector_signals[signal_name].pop(0)
                 last_signals[signal_name] = wave_signal
                 testbench += "\n        {0} <= '{1}';".format(signal_name, wave_signal)
 
             testbench += f"\n        wait for {clk_period} ns;"
 
-            for s in filter(lambda signal: signal["dir"] == "in", signals):
+            for s in filter(lambda signal: signal["dir"] == "out", signals):
                 signal_name = s["name"]
                 wave_signal = self.get_wave_signal(s, i)
                 if wave_signal == '.':
                     wave_signal = last_signals[signal_name]
+                elif wave_signal == '=':
+                    wave_signal = vector_signals[signal_name].pop(0)
                 last_signals[signal_name] = wave_signal
                 testbench += "\n        assert {0} = '{1}' report \"expected {0} = {1} at {2}ns\" severity error;"\
                     .format(signal_name, wave_signal, clk_period * (i + 1))
