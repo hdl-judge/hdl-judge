@@ -24,7 +24,7 @@ def create_app(is_test: bool = False) -> FastAPI:
         "http://localhost:5000",
         "http://0.0.0.0:5000",
         "http://127.0.0.1:5000",
-        "http://hdl-judge.brazilsouth.cloudapp.azure.com:8000",
+        "https://hdl-judge.brazilsouth.cloudapp.azure.com",
         "http://localhost:8000",
     ]
 

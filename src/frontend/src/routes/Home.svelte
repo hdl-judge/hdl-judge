@@ -1,7 +1,6 @@
 <script>
     import Editor from "../components/Editor.svelte";
 
-    export let params;
     let getInitialFiles = () => [
         { filename: "instrucoes.txt", content: "Implemente um somador com carry in e carry out"},
         { filename: "adder.vhdl", content: `entity adder is
@@ -101,7 +100,4 @@ end behav;
 />
 
 <style>
-    section {
-        padding: 1.3rem;
-    }
 </style>
