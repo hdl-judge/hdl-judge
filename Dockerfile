@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster
+FROM python:3.10.1-slim-bullseye
 WORKDIR /usr/src/app
 COPY requirements.txt ./
 RUN apt-get update && apt-get install -y build-essential
