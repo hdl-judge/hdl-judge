@@ -1,1 +1,1 @@
-web: python src/backend/start.py
+web: python src/backend/start.py server $PORT
