@@ -30,5 +30,5 @@ toml==0.10.2
 typing_extensions==4.0.0
 urllib3==1.26.7
 uvicorn==0.15.0
-
+python-jose==3.3.0
 passlib~=1.7.4
