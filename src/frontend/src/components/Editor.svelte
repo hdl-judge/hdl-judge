@@ -162,7 +162,7 @@
                 <button on:click={() => createAndDownloadFile(resultFileContent, resultFileName)}>
                     Download VCD
                 </button>
-                <button on:click={() => window.open("http://raczben.pythonanywhere.com/")}>
+                <button on:click={() => window.open("http://127.0.0.1:9000/")}>
                     Abrir visualizador de forma de onda
                 </button>
             {/if}

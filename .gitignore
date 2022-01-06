@@ -138,4 +138,5 @@ config.yml
 static/*
 !static/.gitkeep
 
-test_database
+test_database*
+node_modules

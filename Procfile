@@ -1,0 +1,1 @@
+web: python src/backend/start.py
