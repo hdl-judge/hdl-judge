@@ -153,7 +153,7 @@ begin
                 elif wave_signal == '=':
                     wave_signal = vector_signals[signal_name].pop(0)
                 last_signals[signal_name] = wave_signal
-                testbench += "\n        assert {0} = '{1}' report \"expected {0} = {1} at {2}ns\" severity error;"\
+                testbench += "\n        assert {0} = '{1}' report \"expected {0} = {1} at {2}ns\" severity error;" \
                     .format(signal_name, wave_signal, clk_period * (i + 1))
 
             testbench += "\n        "
@@ -164,7 +164,7 @@ begin
     end process;
 end architecture;"""
 
-        print(testbench)
+        # print(testbench)
 
         return testbench
 
@@ -223,4 +223,3 @@ end architecture;"""
 
         except subprocess.CalledProcessError as ex:
             return ex.stderr
-

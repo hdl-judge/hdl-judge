@@ -1,4 +1,5 @@
 from logging import Logger
+from typing import List, Dict, Any, Text
 
 from src.backend.controllers import BaseController
 
@@ -30,6 +31,14 @@ class MotorController(BaseController):
         files = []
         for record in db_files:
             new_file = File(filename=record['name'], content=record['default_code' if is_admin else 'code'])
+            files.append(new_file)
+
+        return self.code_motor.get_waveform(files)
+
+    def run_code(self, data: List[Dict[Text, Any]]):
+        files = []
+        for record in data:
+            new_file = File(filename=record['filename'], content=record['content'])
             files.append(new_file)
 
         return self.code_motor.get_waveform(files)

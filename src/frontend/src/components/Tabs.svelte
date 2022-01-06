@@ -9,6 +9,7 @@
     export let showDelete: boolean = true;
     export let showAdd: boolean = true;
     export let allowRename: boolean = true;
+    export let returnButton: boolean = true;
 
     const dispatch = createEventDispatcher();
 
@@ -28,7 +29,9 @@
 </script>
 
 <section class="tabs">
-    <span on:click={pop} class="btn btn-icon"><Icon data={arrowLeft} /></span>
+    {#if returnButton}
+        <span on:click={pop} class="btn btn-icon"><Icon data={arrowLeft} /></span>
+    {/if}
 
     {#if showDelete}
         <div class="nav-button" on:click={() => dispatch('deleteTab')}>

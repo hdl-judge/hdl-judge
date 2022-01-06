@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 from logging import Logger
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -132,6 +132,18 @@ async def submit(
 ):
     controller = MotorController(logger=Logger, database_client=database_client, code_motor=hdl_motor)
     response = controller.submit_codes_to_run(project_id, current_user["id"], current_user["is_admin"])
+    return response
+
+
+@router.post('/run_code')
+@inject
+async def run_code(
+    data: List[Dict[Text, Any]],
+    hdl_motor: HDLMotor = Depends(Provide[Container.hdl_motor]),
+    database_client: SQLClient = Depends(Provide[Container.database_client]),
+):
+    controller = MotorController(logger=Logger, database_client=database_client, code_motor=hdl_motor)
+    response = controller.run_code(data)
     return response
 
 

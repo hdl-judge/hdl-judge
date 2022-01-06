@@ -1,10 +1,15 @@
-FROM python:3.10.1-slim-bullseye
-WORKDIR /usr/src/app
-COPY requirements.txt ./
-RUN apt-get update && apt-get install -y build-essential
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-ENV EXEC_TYPE server
-ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app"
-CMD [ "sh", "-c", "python ./src/backend/start.py ${EXEC_TYPE}" ]
-EXPOSE 8000
+FROM node AS builder
+WORKDIR /tmp
+COPY src/frontend/package.json /tmp
+RUN npm i
+COPY src/frontend /tmp
+RUN npm run build
+
+FROM python:3.10.1
+WORKDIR /app
+COPY requirements.txt /app
+RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY . /app
+COPY --from=builder /tmp/public/* /app/static/*
+ENV PYTHONPATH "${PYTHONPATH}:/app"
+CMD [ "python", "./src/backend/start.py", "server", "80" ]

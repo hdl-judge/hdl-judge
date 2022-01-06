@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {runTest} from "../utils/api/api";
+    import {runCode, runTest} from "../utils/api/api";
     import { createAndDownloadFile } from "../utils/utils";
     import Tabs from "../components/Tabs.svelte";
     import TextEditor from "../components/TextEditor.svelte";
@@ -11,11 +11,14 @@
     export let getFiles: Function;
     export let saveFiles: Function;
     export let deleteFiles: Function;
+    export let onlyRunCode: boolean = false;
     export let showReset: boolean = false;
     export let showDelete: boolean = true;
     export let showAdd: boolean = true;
     export let showRun: boolean = true;
+    export let showSave: boolean = true;
     export let allowRename: boolean = true;
+    export let returnButton: boolean = true;
     let editor: CodeMirror.EditorFromTextArea;
     let message: string = "";
     let resultFileContent: string;
@@ -43,7 +46,7 @@
     async function onRunFiles(): Promise<void> {
         await onSaveFiles();
         loading = true;
-        let response = await runTest(projectId);
+        let response = onlyRunCode ? await runCode(tabItems) : await runTest(projectId);
         loading = false;
 
         message = response.status == "OK"
@@ -154,6 +157,7 @@
         showAdd={showAdd}
         showDelete={showDelete}
         allowRename={allowRename}
+        returnButton={returnButton}
     />
 
     <nav>
@@ -162,14 +166,16 @@
                 <button on:click={() => createAndDownloadFile(resultFileContent, resultFileName)}>
                     Download VCD
                 </button>
-                <button on:click={() => window.open("http://127.0.0.1:9000/")}>
+                <button on:click={() => window.open("https://hdl-judge-fliplot.herokuapp.com/")}>
                     Abrir visualizador de forma de onda
                 </button>
             {/if}
             {#if showReset}
                 <button on:click={onReset}>Reset</button>
             {/if}
-            <button on:click={onSaveFiles}>Salvar</button>
+            {#if showSave}
+                <button on:click={onSaveFiles}>Salvar</button>
+            {/if}
             {#if showRun}
                 <button on:click={onRunFiles}>Rodar</button>
             {/if}

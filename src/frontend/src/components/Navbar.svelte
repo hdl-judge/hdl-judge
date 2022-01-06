@@ -11,7 +11,7 @@
 </script>
 
 <nav>
-    <a href="/" use:link use:active={{ className: 'active-navbar' }} class="nav-button">Home</a>
+    <a href="/" use:link use:active={{ className: 'active-navbar' }} class="nav-button">Editor Livre</a>
 
     {#if $userStore}
         <a href="/projects" use:link use:active={{ className: 'active-navbar' }} class="nav-button">Projetos</a>

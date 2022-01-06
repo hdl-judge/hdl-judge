@@ -21,7 +21,11 @@ export async function login(username: string, password: string) {
 }
 
 export async function runTest(projectId: string): Promise<SubmissionResponse> {
-	return await get("/submit", {project_id : parseInt(projectId, 10)})
+	return await get("/submit", {project_id : parseInt(projectId, 10)});
+}
+
+export async function runCode(items): Promise<SubmissionResponse> {
+	return await post("/run_code", items);
 }
 
 export async function getAllProjects() {
